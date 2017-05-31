@@ -1,2 +1,4 @@
 <h1>TEST</h1>
-<?= $_GET['path']; ?>
+<?php
+var_dump($_GET['path']);
+?>
