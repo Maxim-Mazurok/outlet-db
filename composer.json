@@ -1,0 +1,12 @@
+{
+  "name": "maxim-mazurok/outlet-db",
+  "description": "JSON API to DB for outlet app",
+  "minimum-stability": "stable",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "Maxim Mazurok",
+      "email": "maxim@mazurok.com"
+    }
+  ]
+}
