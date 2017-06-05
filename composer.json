@@ -8,5 +8,8 @@
       "name": "Maxim Mazurok",
       "email": "maxim@mazurok.com"
     }
-  ]
+  ],
+  "require-dev": {
+    "vlucas/phpdotenv": "^2.4"
+  }
 }

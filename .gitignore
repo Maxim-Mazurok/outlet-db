@@ -1,5 +1,8 @@
-#JetBrains IDE
+### JetBrains IDE
 .idea/
 
-#composer
+### Composer
 vendor/
+
+### For local development
+.env
