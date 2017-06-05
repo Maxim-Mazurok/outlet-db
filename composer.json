@@ -9,7 +9,7 @@
       "email": "maxim@mazurok.com"
     }
   ],
-  "require-dev": {
+  "require": {
     "vlucas/phpdotenv": "^2.4"
   }
 }
