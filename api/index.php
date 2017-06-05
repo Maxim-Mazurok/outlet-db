@@ -1,7 +1,9 @@
 <?php
-require_once('../vendor/autoload.php');
-$dotenv = new Dotenv\Dotenv('..');
-$dotenv->load();
+if ($_ENV['PHP_ENV'] !== 'production') {
+    require_once('../vendor/autoload.php');
+    $dotenv = new Dotenv\Dotenv('..');
+    $dotenv->load();
+}
 
 require_once('../include/db.php');
 
