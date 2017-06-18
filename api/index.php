@@ -1,13 +1,9 @@
 <?php
+require_once('../vendor/autoload.php');
 if ($_ENV['PHP_ENV'] !== 'production') {
-    require_once('../vendor/autoload.php');
     $dotenv = new Dotenv\Dotenv('..');
     $dotenv->load();
 }
-
-ini_set('file_uploads', 'On');
-ini_set('upload_max_filesize', '50M');
-ini_set('post_max_size', '50M');
 
 function not_empty_get(array $items) {
     foreach ($items as $item) {
@@ -115,6 +111,33 @@ switch ($_GET['type']) {
                     }
                 } else {
                     $r = pg_query($db, "SELECT edition_name, model_number, model_name, short_name, product_id FROM {$_GET['table']}");
+                    echo json_encode(pg_num_rows($r) > 0 ? pg_fetch_all($r) : []);
+                }
+                break;
+            case 'videos_menu':
+                if (not_empty_get(['edition_name', 'model_number', 'video_title', 'product_id'])) {
+                    switch ($_GET['file']) {
+                        case 'thumbnail':
+                        case 'video':
+                            $f = $_GET['file'];
+                            $r = pg_query($db, "SELECT $f FROM {$_GET['table']} WHERE 
+                                edition_name = '{$_GET['edition_name']}' AND 
+                                model_number = '{$_GET['model_number']}' AND 
+                                video_title = '{$_GET['video_title']}' AND
+                                product_id = '{$_GET['product_id']}'
+                            ");
+                            $res = pg_fetch_assoc($r);
+                            $data = pg_unescape_bytea($res[$_GET['file']]);
+                            $mime_type = finfo_buffer(finfo_open(), $data, FILEINFO_MIME_TYPE);
+                            header("Content-type: {$mime_type}", true);
+                            echo $data;
+                            break;
+                        default:
+                            die(404);
+                            break;
+                    }
+                } else {
+                    $r = pg_query($db, "SELECT edition_name, model_number, model_name, short_name, video_title, length, size, price_gbp, price_usd, price_eur, product_id FROM {$_GET['table']}");
                     echo json_encode(pg_num_rows($r) > 0 ? pg_fetch_all($r) : []);
                 }
                 break;
@@ -260,6 +283,65 @@ switch ($_GET['type']) {
                         $data = file_get_contents($_FILES[$field]['tmp_name']);
                         if (!$data) $fields_not_empty = false;
                         array_push($sql_fields, pg_escape_bytea($data));
+                    } else {
+                        if (empty($_POST[$field])) $fields_not_empty = false;
+                        array_push($sql_fields, $_POST[$field]);
+                    }
+                }
+
+                if ($fields_not_empty) {
+                    $query = "INSERT INTO {$_GET['table']} VALUES ('" . join("','", $sql_fields) . "')";
+                    pg_query($db, $query);
+                }
+                break;
+            case 'videos_menu':
+                $post_fields = array(
+                    'edition_name',
+                    'model_number',
+                    'model_name',
+                    'short_name',
+                    'video_title',
+                    '(len)length',
+                    '(size)size',
+                    'price_gbp',
+                    'price_usd',
+                    'price_eur',
+                    '(gen)thumbnail',
+                    '(upl)video',
+                    'product_id'
+                );
+
+                $sql_fields = array();
+
+                $fields_not_empty = true;
+                foreach ($post_fields as $field) {
+                    if (substr($field, 0, strlen('(upl)')) === '(upl)') {
+                        $field = substr($field, strlen('(upl)'));
+                        if (empty($_FILES[$field])) $fields_not_empty = false;
+                        $data = file_get_contents($_FILES[$field]['tmp_name']);
+                        if (!$data) $fields_not_empty = false;
+                        array_push($sql_fields, pg_escape_bytea($data));
+                    } elseif (substr($field, 0, strlen('(len)')) === '(len)') {
+                        $field = substr($field, strlen('(len)'));
+                        $ffprobe = FFMpeg\FFProbe::create();
+                        $duration = $ffprobe->format($_FILES['video']['tmp_name'])->get('duration');
+                        array_push($sql_fields, intval($duration));
+                    } elseif (substr($field, 0, strlen('(size)')) === '(size)') {
+                        $field = substr($field, strlen('(size)'));
+                        $size = $_FILES['video']['size'];
+                        array_push($sql_fields, $size);
+                    } elseif (substr($field, 0, strlen('(gen)')) === '(gen)') {
+                        $field = substr($field, strlen('(gen)'));
+                        $ffmpeg = FFMpeg\FFMpeg::create();
+                        $video = $ffmpeg->open($_FILES['video']['tmp_name']);
+                        $ffprobe = FFMpeg\FFProbe::create();
+                        $duration = $ffprobe->format($_FILES['video']['tmp_name'])->get('duration');
+                        $frame = $video->frame(FFMpeg\Coordinate\TimeCode::fromSeconds(intval($duration / 2)));
+                        //$thumbnail = pg_escape_bytea(base64_decode($frame->save("{$_FILES['video']['tmp_name']}_frame.jpg", false, true)));
+                        $frame->save("{$_FILES['video']['tmp_name']}_frame.jpg");
+                        $data = file_get_contents("{$_FILES['video']['tmp_name']}_frame.jpg");
+                        $thumbnail = pg_escape_bytea($data);
+                        array_push($sql_fields, $thumbnail);
                     } else {
                         if (empty($_POST[$field])) $fields_not_empty = false;
                         array_push($sql_fields, $_POST[$field]);

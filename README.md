@@ -108,22 +108,19 @@
     ------WebKitFormBoundarykAdOVRwnUGoIy2QF
     Content-Disposition: form-data; name="product_id"
     
-    123
-    
+    123    
     ------WebKitFormBoundarykAdOVRwnUGoIy2QF
     Content-Disposition: form-data; name="price_gbp"
     
-    100
-    
+    100    
     ------WebKitFormBoundarykAdOVRwnUGoIy2QF
     Content-Disposition: form-data; name="price_usd"
     
-    150
-    
+    150    
     ------WebKitFormBoundarykAdOVRwnUGoIy2QF
     Content-Disposition: form-data; name="price_eur"
     
-    125
+    125    
     
     ------WebKitFormBoundarykAdOVRwnUGoIy2QF--
     
@@ -235,3 +232,71 @@
         &model_number=3
         &product_id=product_id_1
         &file=thumbnail_grey
+
+
+#### Videos Menu
+
+##### Add New One
+    POST /api
+        ?table=videos_menu
+        &type=add
+        
+    Request Payload
+    
+    ------WebKitFormBoundarykAdOVRwnUGoIy2QF
+    Content-Disposition: form-data; name="edition_name"
+    
+    edition_name_1
+    ------WebKitFormBoundarykAdOVRwnUGoIy2QF
+    Content-Disposition: form-data; name="model_number"
+    
+    3
+    ------WebKitFormBoundarykAdOVRwnUGoIy2QF
+    Content-Disposition: form-data; name="model_name"
+    
+    model_name_3
+    ------WebKitFormBoundarykAdOVRwnUGoIy2QF
+    Content-Disposition: form-data; name="short_name"
+    
+    short_model_name_3
+    ------WebKitFormBoundarykAdOVRwnUGoIy2QF
+    Content-Disposition: form-data; name="video_title"
+    
+    video_title_text
+    ------WebKitFormBoundarykAdOVRwnUGoIy2QF
+    Content-Disposition: form-data; name="price_gbp"
+    
+    100    
+    ------WebKitFormBoundarykAdOVRwnUGoIy2QF
+    Content-Disposition: form-data; name="price_usd"
+    
+    150    
+    ------WebKitFormBoundarykAdOVRwnUGoIy2QF
+    Content-Disposition: form-data; name="price_eur"
+    
+    125    
+    ------WebKitFormBoundarykAdOVRwnUGoIy2QF
+    Content-Disposition: form-data; name="video"; filename="file_to_upload_1.mp4"
+    Content-Type: video/mp4
+    
+    ------WebKitFormBoundarykAdOVRwnUGoIy2QF
+    Content-Disposition: form-data; name="product_id"
+    
+    product_id_1
+    
+    ------WebKitFormBoundarykAdOVRwnUGoIy2QF--
+    
+#### Get All (Except images)
+    GET /api
+        ?table=videos_menu
+        &type=get
+    
+#### Get Image
+    GET /api
+        ?table=videos_menu
+        &type=get
+        &edition_name=edition_name_1
+        &model_number=3
+        &product_id=product_id_1
+        &video_title=video_title_text
+        &file=thumbnail
