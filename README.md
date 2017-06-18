@@ -180,3 +180,58 @@
         &type=get
         &name=facebook
         &file=thumbnail_grey
+
+
+#### Subscriptions Menu
+
+##### Add New One
+    POST /api
+        ?table=subscriptions_menu
+        &type=add
+        
+    Request Payload
+    
+    ------WebKitFormBoundarykAdOVRwnUGoIy2QF
+    Content-Disposition: form-data; name="edition_name"
+    
+    edition_name_1
+    ------WebKitFormBoundarykAdOVRwnUGoIy2QF
+    Content-Disposition: form-data; name="model_number"
+    
+    3
+    ------WebKitFormBoundarykAdOVRwnUGoIy2QF
+    Content-Disposition: form-data; name="model_name"
+    
+    model_name_3
+    ------WebKitFormBoundarykAdOVRwnUGoIy2QF
+    Content-Disposition: form-data; name="short_name"
+    
+    short_model_name_3
+    ------WebKitFormBoundarykAdOVRwnUGoIy2QF
+    Content-Disposition: form-data; name="thumbnail"; filename="file_to_upload_1.png"
+    Content-Type: image/png    
+    
+    ------WebKitFormBoundarykAdOVRwnUGoIy2QF
+    Content-Disposition: form-data; name="subscription_image"; filename="file_to_upload_2.png"
+    Content-Type: image/png
+    
+    ------WebKitFormBoundarykAdOVRwnUGoIy2QF
+    Content-Disposition: form-data; name="product_id"
+    
+    product_id_1
+    
+    ------WebKitFormBoundarykAdOVRwnUGoIy2QF--
+    
+#### Get All (Except images)
+    GET /api
+        ?table=subscriptions_menu
+        &type=get
+    
+#### Get Image
+    GET /api
+        ?table=subscriptions_menu
+        &type=get
+        &edition_name=edition_name_1
+        &model_number=3
+        &product_id=product_id_1
+        &file=thumbnail_grey

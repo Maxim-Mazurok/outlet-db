@@ -41,7 +41,7 @@ CREATE TABLE subscriptions_menu
   short_name         TEXT,
   thumbnail          BYTEA,
   subscription_image BYTEA,
-  product_id         TEXT
+  product_id         INTEGER
 );
 CREATE TABLE videos_menu
 (

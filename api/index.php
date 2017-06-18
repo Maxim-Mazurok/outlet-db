@@ -92,6 +92,32 @@ switch ($_GET['type']) {
                     echo json_encode(pg_num_rows($r) > 0 ? pg_fetch_all($r) : []);
                 }
                 break;
+            case 'subscriptions_menu':
+                if (not_empty_get(['edition_name', 'model_number', 'product_id'])) {
+                    switch ($_GET['file']) {
+                        case 'thumbnail':
+                        case 'subscription_image':
+                            $f = $_GET['file'];
+                            $r = pg_query($db, "SELECT $f FROM {$_GET['table']} WHERE 
+                                edition_name = '{$_GET['edition_name']}' AND 
+                                model_number = '{$_GET['model_number']}' AND 
+                                product_id = '{$_GET['product_id']}'
+                            ");
+                            $res = pg_fetch_assoc($r);
+                            $data = pg_unescape_bytea($res[$_GET['file']]);
+                            $mime_type = finfo_buffer(finfo_open(), $data, FILEINFO_MIME_TYPE);
+                            header("Content-type: {$mime_type}", true);
+                            echo $data;
+                            break;
+                        default:
+                            die(404);
+                            break;
+                    }
+                } else {
+                    $r = pg_query($db, "SELECT edition_name, model_number, model_name, short_name, product_id FROM {$_GET['table']}");
+                    echo json_encode(pg_num_rows($r) > 0 ? pg_fetch_all($r) : []);
+                }
+                break;
             default:
                 die(404);
                 break;
@@ -181,7 +207,6 @@ switch ($_GET['type']) {
 
                 if ($fields_not_empty) {
                     $query = "INSERT INTO {$_GET['table']} VALUES ('" . join("','", $sql_fields) . "')";
-                    //die($query);
                     pg_query($db, $query);
                 }
                 break;
@@ -211,7 +236,38 @@ switch ($_GET['type']) {
 
                 if ($fields_not_empty) {
                     $query = "INSERT INTO {$_GET['table']} VALUES ('" . join("','", $sql_fields) . "')";
-                    //die($query);
+                    pg_query($db, $query);
+                }
+                break;
+            case 'subscriptions_menu':
+                $post_fields = array(
+                    'edition_name',
+                    'model_number',
+                    'model_name',
+                    'short_name',
+                    '(upl)thumbnail',
+                    '(upl)subscription_image',
+                    'product_id'
+                );
+
+                $sql_fields = array();
+
+                $fields_not_empty = true;
+                foreach ($post_fields as $field) {
+                    if (substr($field, 0, 5) === '(upl)') {
+                        $field = substr($field, 5);
+                        if (empty($_FILES[$field])) $fields_not_empty = false;
+                        $data = file_get_contents($_FILES[$field]['tmp_name']);
+                        if (!$data) $fields_not_empty = false;
+                        array_push($sql_fields, pg_escape_bytea($data));
+                    } else {
+                        if (empty($_POST[$field])) $fields_not_empty = false;
+                        array_push($sql_fields, $_POST[$field]);
+                    }
+                }
+
+                if ($fields_not_empty) {
+                    $query = "INSERT INTO {$_GET['table']} VALUES ('" . join("','", $sql_fields) . "')";
                     pg_query($db, $query);
                 }
                 break;
