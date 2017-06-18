@@ -30,7 +30,6 @@ var_dump($_FILES);
     <input type="number" name="model_number">
     <input type="text" name="model_name">
     <input type="text" name="short_name">
-    <input type="file" name="thumbnail">
     <input type="file" name="subscription_image">
     <input type="number" name="product_id">
     <input type="submit">

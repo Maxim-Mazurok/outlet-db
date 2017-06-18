@@ -13,6 +13,13 @@ function not_empty_get(array $items) {
     return true;
 }
 
+function thumbnailImage($imagePath) {
+    $imagick = new \Imagick(realpath($imagePath));
+    $imagick->setbackgroundcolor('rgb(64, 64, 64)');
+    $imagick->thumbnailImage(100, 100, true, true);
+    return $imagick->getImageBlob();
+}
+
 require_once('../include/db.php');
 
 switch ($_GET['type']) {
@@ -268,7 +275,7 @@ switch ($_GET['type']) {
                     'model_number',
                     'model_name',
                     'short_name',
-                    '(upl)thumbnail',
+                    '(gen)thumbnail',
                     '(upl)subscription_image',
                     'product_id'
                 );
@@ -277,10 +284,15 @@ switch ($_GET['type']) {
 
                 $fields_not_empty = true;
                 foreach ($post_fields as $field) {
-                    if (substr($field, 0, 5) === '(upl)') {
-                        $field = substr($field, 5);
+                    if (substr($field, 0, strlen('(upl)')) === '(upl)') {
+                        $field = substr($field, strlen('(upl)'));
                         if (empty($_FILES[$field])) $fields_not_empty = false;
                         $data = file_get_contents($_FILES[$field]['tmp_name']);
+                        if (!$data) $fields_not_empty = false;
+                        array_push($sql_fields, pg_escape_bytea($data));
+                    } elseif (substr($field, 0, strlen('(gen)')) === '(gen)') {
+                        $field = substr($field, strlen('(gen)'));
+                        $data = thumbnailImage($_FILES['subscription_image']['tmp_name']);
                         if (!$data) $fields_not_empty = false;
                         array_push($sql_fields, pg_escape_bytea($data));
                     } else {
