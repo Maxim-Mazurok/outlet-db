@@ -205,10 +205,6 @@
     
     short_model_name_3
     ------WebKitFormBoundarykAdOVRwnUGoIy2QF
-    Content-Disposition: form-data; name="thumbnail"; filename="file_to_upload_1.png"
-    Content-Type: image/png    
-    
-    ------WebKitFormBoundarykAdOVRwnUGoIy2QF
     Content-Disposition: form-data; name="subscription_image"; filename="file_to_upload_2.png"
     Content-Type: image/png
     
@@ -291,7 +287,7 @@
         ?table=videos_menu
         &type=get
     
-#### Get Image
+#### Get Image or Video
     GET /api
         ?table=videos_menu
         &type=get
