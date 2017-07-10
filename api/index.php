@@ -116,7 +116,7 @@ switch ($_GET['type']) {
                     'model_number',
                     'model_name',
                     'shoot_name',
-                    '(upl)thumbnail',
+                    '(gen)thumbnail',
                     '(upl)download_image',
                     'product_id',
                     'price_gbp',
@@ -132,6 +132,11 @@ switch ($_GET['type']) {
                         $field = substr($field, 5);
                         if (empty($_FILES[$field])) $fields_not_empty = false;
                         $upload = $s3->upload($bucket, $_FILES[$field]['name'], fopen($_FILES[$field]['tmp_name'], 'rb'), 'public-read');
+                        array_push($sql_fields, $upload->get('ObjectURL'));
+                    } elseif (substr($field, 0, strlen('(gen)')) === '(gen)') {
+                        $field = substr($field, strlen('(gen)'));
+                        $data = thumbnailImage($_FILES['download_image']['tmp_name']);
+                        $upload = $s3->upload($bucket, "{$_FILES['download_image']['name']}_thumbnail", $data, 'public-read');
                         array_push($sql_fields, $upload->get('ObjectURL'));
                     } else {
                         if (empty($_POST[$field])) $fields_not_empty = false;
@@ -195,7 +200,7 @@ switch ($_GET['type']) {
                     } elseif (substr($field, 0, strlen('(gen)')) === '(gen)') {
                         $field = substr($field, strlen('(gen)'));
                         $data = thumbnailImage($_FILES['subscription_image']['tmp_name']);
-                        $upload = $s3->upload($bucket, $_FILES[$field]['name'], $data, 'public-read');
+                        $upload = $s3->upload($bucket, "{$_FILES['subscription_image']['name']}_thumbnail", $data, 'public-read');
                         array_push($sql_fields, $upload->get('ObjectURL'));
                     } else {
                         if (empty($_POST[$field])) $fields_not_empty = false;
