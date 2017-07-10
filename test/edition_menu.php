@@ -27,7 +27,7 @@ var_dump($_FILES);
     <input type="text" name="edition_name">
     <input type="number" name="model_number">
     <input type="text" name="model_name">
-    <input type="text" name="short_name">
+    <input type="text" name="shoot_name">
     <input type="file" name="video_button">
     <input type="file" name="subscription_button">
     <input type="file" name="image_button">

@@ -1,4 +1,24 @@
 <?php
+
+/**
+ *
+ * TODO:
+ *
+product_id text por_0001
+
+shoot_name -- shoot_name
+
+страницы админки (CMS)
++ менять пароли для БД
+
+хранить файлы не в базе, а на диске
+
+http auth
+
+no subscr image in images menu
+
+ */
+
 require_once('../vendor/autoload.php');
 if ($_ENV['PHP_ENV'] !== 'production') {
     $dotenv = new Dotenv\Dotenv('..');
@@ -47,7 +67,7 @@ switch ($_GET['type']) {
                             break;
                     }
                 } else {
-                    $r = pg_query($db, "SELECT edition_name, model_number, model_name, short_name FROM edition_menu");
+                    $r = pg_query($db, "SELECT edition_name, model_number, model_name, shoot_name FROM edition_menu");
                     echo json_encode(pg_num_rows($r) > 0 ? pg_fetch_all($r) : []);
                 }
                 break;
@@ -70,7 +90,7 @@ switch ($_GET['type']) {
                             break;
                     }
                 } else {
-                    $r = pg_query($db, "SELECT edition_name, model_number, model_name, short_name, product_id, price_gbp, price_usd, price_eur FROM images_menu");
+                    $r = pg_query($db, "SELECT edition_name, model_number, model_name, shoot_name, product_id, price_gbp, price_usd, price_eur FROM images_menu");
                     echo json_encode(pg_num_rows($r) > 0 ? pg_fetch_all($r) : []);
                 }
                 break;
@@ -117,7 +137,7 @@ switch ($_GET['type']) {
                             break;
                     }
                 } else {
-                    $r = pg_query($db, "SELECT edition_name, model_number, model_name, short_name, product_id FROM {$_GET['table']}");
+                    $r = pg_query($db, "SELECT edition_name, model_number, model_name, shoot_name, product_id FROM {$_GET['table']}");
                     echo json_encode(pg_num_rows($r) > 0 ? pg_fetch_all($r) : []);
                 }
                 break;
@@ -144,7 +164,7 @@ switch ($_GET['type']) {
                             break;
                     }
                 } else {
-                    $r = pg_query($db, "SELECT edition_name, model_number, model_name, short_name, video_title, length, size, price_gbp, price_usd, price_eur, product_id FROM {$_GET['table']}");
+                    $r = pg_query($db, "SELECT edition_name, model_number, model_name, shoot_name, video_title, length, size, price_gbp, price_usd, price_eur, product_id FROM {$_GET['table']}");
                     echo json_encode(pg_num_rows($r) > 0 ? pg_fetch_all($r) : []);
                 }
                 break;
@@ -171,7 +191,7 @@ switch ($_GET['type']) {
                     'edition_name',
                     'model_number',
                     'model_name',
-                    'short_name'
+                    'shoot_name'
                 );
                 $upload_fields = array(
                     'video_button',
@@ -209,7 +229,7 @@ switch ($_GET['type']) {
                     'edition_name',
                     'model_number',
                     'model_name',
-                    'short_name',
+                    'shoot_name',
                     '(upl)thumbnail',
                     '(upl)subscription_image',
                     '(upl)download_image',
@@ -274,7 +294,7 @@ switch ($_GET['type']) {
                     'edition_name',
                     'model_number',
                     'model_name',
-                    'short_name',
+                    'shoot_name',
                     '(gen)thumbnail',
                     '(upl)subscription_image',
                     'product_id'
@@ -311,7 +331,7 @@ switch ($_GET['type']) {
                     'edition_name',
                     'model_number',
                     'model_name',
-                    'short_name',
+                    'shoot_name',
                     'video_title',
                     '(len)length',
                     '(size)size',

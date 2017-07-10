@@ -26,12 +26,12 @@ var_dump($_FILES);
 ?>
 </pre>
 <form action="/api/index.php?type=add&table=subscriptions_menu" method="post" enctype="multipart/form-data">
-    <input type="text" name="edition_name">
-    <input type="number" name="model_number">
-    <input type="text" name="model_name">
-    <input type="text" name="short_name">
-    <input type="file" name="subscription_image">
-    <input type="number" name="product_id">
+    edition_name: <input type="text" name="edition_name">
+    model_number: <input type="number" name="model_number">
+    model_name: <input type="text" name="model_name">
+    shoot_name: <input type="text" name="shoot_name">
+    subscription_image: <input type="file" name="subscription_image">
+    product_id: <input type="number" name="product_id">
     <input type="submit">
 </form>
 </body>
