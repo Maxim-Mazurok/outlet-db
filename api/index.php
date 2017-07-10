@@ -51,127 +51,13 @@ switch ($_GET['type']) {
     case 'get':
         switch ($_GET['table']) {
             case 'editions':
+            case 'edition_menu':
+            case 'images_menu':
+            case 'social_networks':
+            case 'subscriptions_menu':
+            case 'videos_menu':
                 $r = pg_query($db, "SELECT * FROM {$_GET['table']}");
                 echo json_encode(pg_num_rows($r) > 0 ? pg_fetch_all($r) : []);
-                break;
-            case 'edition_menu':
-                if (not_empty_get(['file', 'edition_name', 'model_number'])) {
-                    switch ($_GET['file']) {
-                        case 'video_button':
-                        case 'subscription_button':
-                        case 'image_button':
-                            $r = pg_query($db, "SELECT {$_GET['file']} FROM edition_menu WHERE edition_name = '{$_GET['edition_name']}' AND model_number = '{$_GET['model_number']}'");
-                            $res = pg_fetch_assoc($r);
-                            $data = pg_unescape_bytea($res[$_GET['file']]);
-                            $mime_type = finfo_buffer(finfo_open(), $data, FILEINFO_MIME_TYPE);
-                            header("Content-type: {$mime_type}", true);
-                            echo $data;
-                            break;
-                        default:
-                            die(404);
-                            break;
-                    }
-                } else {
-                    $r = pg_query($db, "SELECT edition_name, model_number, model_name, shoot_name FROM edition_menu");
-                    echo json_encode(pg_num_rows($r) > 0 ? pg_fetch_all($r) : []);
-                }
-                break;
-            case 'images_menu':
-                if (not_empty_get(['edition_name', 'model_number', 'product_id'])) {
-                    switch ($_GET['file']) {
-                        case 'thumbnail':
-                        case 'subscription_image':
-                        case 'download_image':
-                            $f = $_GET['file'];
-                            $r = pg_query($db, "SELECT $f FROM images_menu WHERE edition_name = '{$_GET['edition_name']}' AND model_number = '{$_GET['model_number']}' AND product_id = '{$_GET['product_id']}'");
-                            $res = pg_fetch_assoc($r);
-                            $data = pg_unescape_bytea($res[$_GET['file']]);
-                            $mime_type = finfo_buffer(finfo_open(), $data, FILEINFO_MIME_TYPE);
-                            header("Content-type: {$mime_type}", true);
-                            echo $data;
-                            break;
-                        default:
-                            die(404);
-                            break;
-                    }
-                } else {
-                    $r = pg_query($db, "SELECT edition_name, model_number, model_name, shoot_name, product_id, price_gbp, price_usd, price_eur FROM images_menu");
-                    echo json_encode(pg_num_rows($r) > 0 ? pg_fetch_all($r) : []);
-                }
-                break;
-            case 'social_networks':
-                if (not_empty_get(['name'])) {
-                    switch ($_GET['file']) {
-                        case 'thumbnail_grey':
-                            $f = $_GET['file'];
-                            $r = pg_query($db, "SELECT $f FROM {$_GET['table']} WHERE name = '{$_GET['name']}'");
-                            $res = pg_fetch_assoc($r);
-                            $data = pg_unescape_bytea($res[$_GET['file']]);
-                            $mime_type = finfo_buffer(finfo_open(), $data, FILEINFO_MIME_TYPE);
-                            header("Content-type: {$mime_type}", true);
-                            echo $data;
-                            break;
-                        default:
-                            die(404);
-                            break;
-                    }
-                } else {
-                    $r = pg_query($db, "SELECT name, url, icon_color FROM {$_GET['table']}");
-                    echo json_encode(pg_num_rows($r) > 0 ? pg_fetch_all($r) : []);
-                }
-                break;
-            case 'subscriptions_menu':
-                if (not_empty_get(['edition_name', 'model_number', 'product_id'])) {
-                    switch ($_GET['file']) {
-                        case 'thumbnail':
-                        case 'subscription_image':
-                            $f = $_GET['file'];
-                            $r = pg_query($db, "SELECT $f FROM {$_GET['table']} WHERE 
-                                edition_name = '{$_GET['edition_name']}' AND 
-                                model_number = '{$_GET['model_number']}' AND 
-                                product_id = '{$_GET['product_id']}'
-                            ");
-                            $res = pg_fetch_assoc($r);
-                            $data = pg_unescape_bytea($res[$_GET['file']]);
-                            $mime_type = finfo_buffer(finfo_open(), $data, FILEINFO_MIME_TYPE);
-                            header("Content-type: {$mime_type}", true);
-                            echo $data;
-                            break;
-                        default:
-                            die(404);
-                            break;
-                    }
-                } else {
-                    $r = pg_query($db, "SELECT edition_name, model_number, model_name, shoot_name, product_id FROM {$_GET['table']}");
-                    echo json_encode(pg_num_rows($r) > 0 ? pg_fetch_all($r) : []);
-                }
-                break;
-            case 'videos_menu':
-                if (not_empty_get(['edition_name', 'model_number', 'video_title', 'product_id'])) {
-                    switch ($_GET['file']) {
-                        case 'thumbnail':
-                        case 'video':
-                            $f = $_GET['file'];
-                            $r = pg_query($db, "SELECT $f FROM {$_GET['table']} WHERE 
-                                edition_name = '{$_GET['edition_name']}' AND 
-                                model_number = '{$_GET['model_number']}' AND 
-                                video_title = '{$_GET['video_title']}' AND
-                                product_id = '{$_GET['product_id']}'
-                            ");
-                            $res = pg_fetch_assoc($r);
-                            $data = pg_unescape_bytea($res[$_GET['file']]);
-                            $mime_type = finfo_buffer(finfo_open(), $data, FILEINFO_MIME_TYPE);
-                            header("Content-type: {$mime_type}", true);
-                            echo $data;
-                            break;
-                        default:
-                            die(404);
-                            break;
-                    }
-                } else {
-                    $r = pg_query($db, "SELECT edition_name, model_number, model_name, shoot_name, video_title, length, size, price_gbp, price_usd, price_eur, product_id FROM {$_GET['table']}");
-                    echo json_encode(pg_num_rows($r) > 0 ? pg_fetch_all($r) : []);
-                }
                 break;
             default:
                 die(404);
@@ -231,7 +117,6 @@ switch ($_GET['type']) {
                     'model_name',
                     'shoot_name',
                     '(upl)thumbnail',
-                    '(upl)subscription_image',
                     '(upl)download_image',
                     'product_id',
                     'price_gbp',
@@ -309,7 +194,7 @@ switch ($_GET['type']) {
                         array_push($sql_fields, $upload->get('ObjectURL'));
                     } elseif (substr($field, 0, strlen('(gen)')) === '(gen)') {
                         $field = substr($field, strlen('(gen)'));
-                        $data = thumbnailImage($_FILES['subscription_image']['tmp_name']);
+                        $data = thumbnailImage($_FILES[$field]['tmp_name']);
                         $upload = $s3->upload($bucket, $_FILES[$field]['name'], $data, 'public-read');
                         array_push($sql_fields, $upload->get('ObjectURL'));
                     } else {
@@ -352,21 +237,21 @@ switch ($_GET['type']) {
                     } elseif (substr($field, 0, strlen('(len)')) === '(len)') {
                         $field = substr($field, strlen('(len)'));
                         $ffprobe = FFMpeg\FFProbe::create();
-                        $duration = $ffprobe->format($_FILES['video']['tmp_name'])->get('duration');
+                        $duration = $ffprobe->format($_FILES[$field]['tmp_name'])->get('duration');
                         array_push($sql_fields, intval($duration));
                     } elseif (substr($field, 0, strlen('(size)')) === '(size)') {
                         $field = substr($field, strlen('(size)'));
-                        $size = $_FILES['video']['size'];
+                        $size = $_FILES[$field]['size'];
                         array_push($sql_fields, $size);
                     } elseif (substr($field, 0, strlen('(gen)')) === '(gen)') {
                         $field = substr($field, strlen('(gen)'));
                         $ffmpeg = FFMpeg\FFMpeg::create();
-                        $video = $ffmpeg->open($_FILES['video']['tmp_name']);
+                        $video = $ffmpeg->open($_FILES[$field]['tmp_name']);
                         $ffprobe = FFMpeg\FFProbe::create();
-                        $duration = $ffprobe->format($_FILES['video']['tmp_name'])->get('duration');
+                        $duration = $ffprobe->format($_FILES[$field]['tmp_name'])->get('duration');
                         $frame = $video->frame(FFMpeg\Coordinate\TimeCode::fromSeconds(intval($duration / 2)));
-                        //$thumbnail = pg_escape_bytea(base64_decode($frame->save("{$_FILES['video']['tmp_name']}_frame.jpg", false, true)));
-                        $thumbnail_name = "{$_FILES['video']['name']}_frame.jpg";
+                        //$thumbnail = pg_escape_bytea(base64_decode($frame->save("{$_FILES[$field]['tmp_name']}_frame.jpg", false, true)));
+                        $thumbnail_name = "{$_FILES[$field]['name']}_frame.jpg";
                         $thumbnail_path = "/tmp/{$thumbnail_name}";
                         $frame->save($thumbnail_path);
                         $upload = $s3->upload($bucket, $thumbnail_name, fopen($thumbnail_path, 'rb'), 'public-read');

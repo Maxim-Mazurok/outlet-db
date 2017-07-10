@@ -1,3 +1,5 @@
+# Outlet DB
+
 #### Editions
 
 ##### Add New One 
@@ -52,19 +54,11 @@
     
     
     ------WebKitFormBoundarykAdOVRwnUGoIy2QF--
-    
-#### Get All (Except images)
+
+##### Get All
     GET /api
         ?table=edition_menu
         &type=get
-    
-#### Get Image
-    GET /api
-        ?table=edition_menu
-        &type=get
-        &model_number=2
-        &edition_name=edition_name_1
-        &file=image_button
 
 #### Images Menu
 
@@ -123,21 +117,11 @@
     125    
     
     ------WebKitFormBoundarykAdOVRwnUGoIy2QF--
-    
-#### Get All (Except images)
-    GET /api
-        ?table=images_menu
-        &type=get
-    
-#### Get Image
-    GET /api
-        ?table=images_menu
-        &type=get
-        &edition_name=edition_name_1
-        &model_number=2
-        &product_id=123
-        &file=image_button
 
+##### Get All
+    GET /api
+        ?table=images_menu
+        &type=get
 
 #### Social Networks
 
@@ -166,18 +150,10 @@
     
     ------WebKitFormBoundarykAdOVRwnUGoIy2QF--
     
-#### Get All (Except images)
+##### Get All
     GET /api
         ?table=social_networks
         &type=get
-    
-#### Get Image
-    GET /api
-        ?table=social_networks
-        &type=get
-        &name=facebook
-        &file=thumbnail_grey
-
 
 #### Subscriptions Menu
 
@@ -214,21 +190,11 @@
     product_id_1
     
     ------WebKitFormBoundarykAdOVRwnUGoIy2QF--
-    
-#### Get All (Except images)
-    GET /api
-        ?table=subscriptions_menu
-        &type=get
-    
-#### Get Image
-    GET /api
-        ?table=subscriptions_menu
-        &type=get
-        &edition_name=edition_name_1
-        &model_number=3
-        &product_id=product_id_1
-        &file=thumbnail_grey
 
+##### Get All
+    GET /api
+        ?table=subscriptions_menu
+        &type=get
 
 #### Videos Menu
 
@@ -281,18 +247,8 @@
     product_id_1
     
     ------WebKitFormBoundarykAdOVRwnUGoIy2QF--
-    
-#### Get All (Except images)
+
+##### Get All
     GET /api
         ?table=videos_menu
         &type=get
-    
-#### Get Image or Video
-    GET /api
-        ?table=videos_menu
-        &type=get
-        &edition_name=edition_name_1
-        &model_number=3
-        &product_id=product_id_1
-        &video_title=video_title_text
-        &file=thumbnail
