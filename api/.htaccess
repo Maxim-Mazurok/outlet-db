@@ -1,6 +1,6 @@
 Authtype Basic
 AuthName "Outlet DB API authentication"
-AuthUserFile .htpasswd
+AuthUserFile api/.htpasswd
 Require valid-user
 
 RewriteEngine on
