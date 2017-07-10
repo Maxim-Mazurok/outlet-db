@@ -12,6 +12,7 @@
   "require": {
     "vlucas/phpdotenv": "^2.4",
     "php-ffmpeg/php-ffmpeg": "^0.9.3",
-    "ext-imagick": "*"
+    "ext-imagick": "*",
+    "aws/aws-sdk-php": "^3.31"
   }
 }

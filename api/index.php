@@ -4,19 +4,18 @@
  *
  * TODO:
  *
-product_id text por_0001
-
-shoot_name -- shoot_name
-
-страницы админки (CMS)
-+ менять пароли для БД
-
-хранить файлы не в базе, а на диске
-
-http auth
-
-no subscr image in images menu
-
+ * product_id text por_0001
+ *
+ * shoot_name -- shoot_name
+ *
+ * страницы админки (CMS)
+ * + менять пароли для БД
+ *
+ * хранить файлы не в базе, а на диске
+ *
+ * http auth
+ *
+ * no subscr image in images menu
  */
 
 require_once('../vendor/autoload.php');
@@ -24,6 +23,12 @@ if ($_ENV['PHP_ENV'] !== 'production') {
     $dotenv = new Dotenv\Dotenv('..');
     $dotenv->load();
 }
+
+$s3 = Aws\S3\S3Client::factory([
+    'version' => 'latest',
+    'region' => 'eu-west-2'
+]);
+$bucket = getenv('S3_BUCKET_NAME') ?: die('No "S3_BUCKET" config var in found in env!');
 
 function not_empty_get(array $items) {
     foreach ($items as $item) {
@@ -191,32 +196,27 @@ switch ($_GET['type']) {
                     'edition_name',
                     'model_number',
                     'model_name',
-                    'shoot_name'
-                );
-                $upload_fields = array(
-                    'video_button',
-                    'subscription_button',
-                    'image_button'
+                    'shoot_name',
+                    '(upl)video_button',
+                    '(upl)subscription_button',
+                    '(upl)image_button'
                 );
 
                 $sql_fields = array();
 
                 $fields_not_empty = true;
                 foreach ($post_fields as $field) {
-                    if (empty($_POST[$field])) {
-                        $fields_not_empty = false;
+                    if (substr($field, 0, strlen('(upl)')) === '(upl)') {
+                        $field = substr($field, strlen('(upl)'));
+                        if (empty($_FILES[$field])) $fields_not_empty = false;
+                        $upload = $s3->upload($bucket, $_FILES[$field]['name'], fopen($_FILES[$field]['tmp_name'], 'rb'), 'public-read');
+                        array_push($sql_fields, $upload->get('ObjectURL'));
+                    } else {
+                        if (empty($_POST[$field])) {
+                            $fields_not_empty = false;
+                        }
+                        array_push($sql_fields, $_POST[$field]);
                     }
-                    array_push($sql_fields, $_POST[$field]);
-                }
-                foreach ($upload_fields as $field) {
-                    if (empty($_FILES[$field])) {
-                        $fields_not_empty = false;
-                    }
-                    $data = file_get_contents($_FILES[$field]['tmp_name']);
-                    if (!$data) {
-                        $fields_not_empty = false;
-                    }
-                    array_push($sql_fields, pg_escape_bytea($data));
                 }
 
                 if ($fields_not_empty) {
@@ -246,9 +246,8 @@ switch ($_GET['type']) {
                     if (substr($field, 0, 5) === '(upl)') {
                         $field = substr($field, 5);
                         if (empty($_FILES[$field])) $fields_not_empty = false;
-                        $data = file_get_contents($_FILES[$field]['tmp_name']);
-                        if (!$data) $fields_not_empty = false;
-                        array_push($sql_fields, pg_escape_bytea($data));
+                        $upload = $s3->upload($bucket, $_FILES[$field]['name'], fopen($_FILES[$field]['tmp_name'], 'rb'), 'public-read');
+                        array_push($sql_fields, $upload->get('ObjectURL'));
                     } else {
                         if (empty($_POST[$field])) $fields_not_empty = false;
                         array_push($sql_fields, $_POST[$field]);
@@ -275,9 +274,8 @@ switch ($_GET['type']) {
                     if (substr($field, 0, 5) === '(upl)') {
                         $field = substr($field, 5);
                         if (empty($_FILES[$field])) $fields_not_empty = false;
-                        $data = file_get_contents($_FILES[$field]['tmp_name']);
-                        if (!$data) $fields_not_empty = false;
-                        array_push($sql_fields, pg_escape_bytea($data));
+                        $upload = $s3->upload($bucket, $_FILES[$field]['name'], fopen($_FILES[$field]['tmp_name'], 'rb'), 'public-read');
+                        array_push($sql_fields, $upload->get('ObjectURL'));
                     } else {
                         if (empty($_POST[$field])) $fields_not_empty = false;
                         array_push($sql_fields, $_POST[$field]);
@@ -307,14 +305,13 @@ switch ($_GET['type']) {
                     if (substr($field, 0, strlen('(upl)')) === '(upl)') {
                         $field = substr($field, strlen('(upl)'));
                         if (empty($_FILES[$field])) $fields_not_empty = false;
-                        $data = file_get_contents($_FILES[$field]['tmp_name']);
-                        if (!$data) $fields_not_empty = false;
-                        array_push($sql_fields, pg_escape_bytea($data));
+                        $upload = $s3->upload($bucket, $_FILES[$field]['name'], fopen($_FILES[$field]['tmp_name'], 'rb'), 'public-read');
+                        array_push($sql_fields, $upload->get('ObjectURL'));
                     } elseif (substr($field, 0, strlen('(gen)')) === '(gen)') {
                         $field = substr($field, strlen('(gen)'));
                         $data = thumbnailImage($_FILES['subscription_image']['tmp_name']);
-                        if (!$data) $fields_not_empty = false;
-                        array_push($sql_fields, pg_escape_bytea($data));
+                        $upload = $s3->upload($bucket, $_FILES[$field]['name'], $data, 'public-read');
+                        array_push($sql_fields, $upload->get('ObjectURL'));
                     } else {
                         if (empty($_POST[$field])) $fields_not_empty = false;
                         array_push($sql_fields, $_POST[$field]);
@@ -350,9 +347,8 @@ switch ($_GET['type']) {
                     if (substr($field, 0, strlen('(upl)')) === '(upl)') {
                         $field = substr($field, strlen('(upl)'));
                         if (empty($_FILES[$field])) $fields_not_empty = false;
-                        $data = file_get_contents($_FILES[$field]['tmp_name']);
-                        if (!$data) $fields_not_empty = false;
-                        array_push($sql_fields, pg_escape_bytea($data));
+                        $upload = $s3->upload($bucket, $_FILES[$field]['name'], fopen($_FILES[$field]['tmp_name'], 'rb'), 'public-read');
+                        array_push($sql_fields, $upload->get('ObjectURL'));
                     } elseif (substr($field, 0, strlen('(len)')) === '(len)') {
                         $field = substr($field, strlen('(len)'));
                         $ffprobe = FFMpeg\FFProbe::create();
@@ -370,10 +366,11 @@ switch ($_GET['type']) {
                         $duration = $ffprobe->format($_FILES['video']['tmp_name'])->get('duration');
                         $frame = $video->frame(FFMpeg\Coordinate\TimeCode::fromSeconds(intval($duration / 2)));
                         //$thumbnail = pg_escape_bytea(base64_decode($frame->save("{$_FILES['video']['tmp_name']}_frame.jpg", false, true)));
-                        $frame->save("{$_FILES['video']['tmp_name']}_frame.jpg");
-                        $data = file_get_contents("{$_FILES['video']['tmp_name']}_frame.jpg");
-                        $thumbnail = pg_escape_bytea($data);
-                        array_push($sql_fields, $thumbnail);
+                        $thumbnail_name = "{$_FILES['video']['name']}_frame.jpg";
+                        $thumbnail_path = "/tmp/{$thumbnail_name}";
+                        $frame->save($thumbnail_path);
+                        $upload = $s3->upload($bucket, $thumbnail_name, fopen($thumbnail_path, 'rb'), 'public-read');
+                        array_push($sql_fields, $upload->get('ObjectURL'));
                     } else {
                         if (empty($_POST[$field])) $fields_not_empty = false;
                         array_push($sql_fields, $_POST[$field]);
