@@ -194,7 +194,7 @@ switch ($_GET['type']) {
                         array_push($sql_fields, $upload->get('ObjectURL'));
                     } elseif (substr($field, 0, strlen('(gen)')) === '(gen)') {
                         $field = substr($field, strlen('(gen)'));
-                        $data = thumbnailImage($_FILES[$field]['tmp_name']);
+                        $data = thumbnailImage($_FILES['subscription_image']['tmp_name']);
                         $upload = $s3->upload($bucket, $_FILES[$field]['name'], $data, 'public-read');
                         array_push($sql_fields, $upload->get('ObjectURL'));
                     } else {
@@ -237,21 +237,21 @@ switch ($_GET['type']) {
                     } elseif (substr($field, 0, strlen('(len)')) === '(len)') {
                         $field = substr($field, strlen('(len)'));
                         $ffprobe = FFMpeg\FFProbe::create();
-                        $duration = $ffprobe->format($_FILES[$field]['tmp_name'])->get('duration');
+                        $duration = $ffprobe->format($_FILES['video']['tmp_name'])->get('duration');
                         array_push($sql_fields, intval($duration));
                     } elseif (substr($field, 0, strlen('(size)')) === '(size)') {
                         $field = substr($field, strlen('(size)'));
-                        $size = $_FILES[$field]['size'];
+                        $size = $_FILES['video']['size'];
                         array_push($sql_fields, $size);
                     } elseif (substr($field, 0, strlen('(gen)')) === '(gen)') {
                         $field = substr($field, strlen('(gen)'));
                         $ffmpeg = FFMpeg\FFMpeg::create();
-                        $video = $ffmpeg->open($_FILES[$field]['tmp_name']);
+                        $video = $ffmpeg->open($_FILES['video']['tmp_name']);
                         $ffprobe = FFMpeg\FFProbe::create();
-                        $duration = $ffprobe->format($_FILES[$field]['tmp_name'])->get('duration');
+                        $duration = $ffprobe->format($_FILES['video']['tmp_name'])->get('duration');
                         $frame = $video->frame(FFMpeg\Coordinate\TimeCode::fromSeconds(intval($duration / 2)));
-                        //$thumbnail = pg_escape_bytea(base64_decode($frame->save("{$_FILES[$field]['tmp_name']}_frame.jpg", false, true)));
-                        $thumbnail_name = "{$_FILES[$field]['name']}_frame.jpg";
+                        //$thumbnail = pg_escape_bytea(base64_decode($frame->save("{$_FILES['video']['tmp_name']}_frame.jpg", false, true)));
+                        $thumbnail_name = "{$_FILES['video']['name']}_frame.jpg";
                         $thumbnail_path = "/tmp/{$thumbnail_name}";
                         $frame->save($thumbnail_path);
                         $upload = $s3->upload($bucket, $thumbnail_name, fopen($thumbnail_path, 'rb'), 'public-read');
