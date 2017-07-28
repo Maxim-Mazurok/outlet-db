@@ -386,6 +386,72 @@ switch ($_GET['type']) {
                     echo json_encode($images);
                     break;
                 case 'images_menu':
+                    $post_fields = array(
+                        'edition_name',
+                        'model_number',
+                        'model_name',
+                        'shoot_name',
+                        '(gen)thumbnail',
+                        '(upl)download_image',
+                        'product_id',
+                        'price_gbp',
+                        'price_usd',
+                        'price_eur'
+                    );
+
+                    $sql_fields = array();
+                    $images = array();
+
+                    foreach ($post_fields as $field) {
+                        if (substr($field, 0, 5) === '(upl)') {
+                            $field = substr($field, 5);
+                            if (empty($_FILES[$field])) {
+                                $fields_not_empty = false;
+                            } else {
+                                if ($batch) {
+                                    for ($i = 0; $i < count($_FILES[$field]['name']); $i++) {
+                                        $upload = $s3->upload($bucket, $_FILES[$field]['name'][$i], fopen($_FILES[$field]['tmp_name'][$i], 'rb'), 'public-read');
+                                        if (!array_key_exists('upload', $sql_fields)) $sql_fields['upload'] = [];
+                                        array_push($sql_fields['upload'], $upload->get('ObjectURL'));
+                                    }
+                                } else {
+                                    $upload = $s3->upload($bucket, $_FILES[$field]['name'], fopen($_FILES[$field]['tmp_name'], 'rb'), 'public-read');
+                                    array_push($sql_fields, $upload->get('ObjectURL'));
+                                }
+                            }
+                        } elseif (substr($field, 0, strlen('(gen)')) === '(gen)') {
+                            $field = substr($field, strlen('(gen)'));
+                            if (empty($_FILES['download_image'])) {
+                                $fields_not_empty = false;
+                            } else {
+                                if ($batch) {
+                                    for ($i = 0; $i < count($_FILES['download_image']['name']); $i++) {
+                                        $data = thumbnailImage($_FILES['download_image']['tmp_name'][$i]);
+                                        $upload = $s3->upload($bucket, "{$_FILES['download_image']['name'][$i]}_thumbnail", $data, 'public-read');
+                                        if (!array_key_exists('upload_thumbnail', $sql_fields)) $sql_fields['upload_thumbnail'] = [];
+                                        array_push($sql_fields['upload_thumbnail'], $upload->get('ObjectURL'));
+                                    }
+                                } else {
+                                    $data = thumbnailImage($_FILES['download_image']['tmp_name']);
+                                    $upload = $s3->upload($bucket, "{$_FILES['download_image']['name']}_thumbnail", $data, 'public-read');
+                                    array_push($sql_fields, $upload->get('ObjectURL'));
+                                }
+                            }
+                        } elseif ($batch && $field === 'product_id') {
+                            $product_id_prefix = $_POST[$field];
+                        } else {
+                            if (empty($_POST[$field])) $fields_not_empty = false;
+                            $sql_fields[$field] = $_POST[$field];
+                        }
+                    }
+
+                    if (count($sql_fields) > 0) {
+                        $query = "UPDATE {$_GET['table']} SET " . join(", ", $sql_fields) . " WHERE id = {$_GET['id']}";
+                        pg_query($db, $query);
+                    }
+
+                    echo json_encode($images);
+                    break;
                 case 'social_networks':
                     $post_fields = array(
                         'name',
@@ -420,7 +486,118 @@ switch ($_GET['type']) {
                     echo json_encode($images);
                     break;
                 case 'subscriptions_menu':
+                    $post_fields = array(
+                        'edition_name',
+                        'model_number',
+                        'model_name',
+                        'shoot_name',
+                        '(gen)thumbnail',
+                        '(upl)subscription_image',
+                        'product_id'
+                    );
+
+                    $sql_fields = array();
+                    $images = array();
+
+                    foreach ($post_fields as $field) {
+                        if (substr($field, 0, strlen('(upl)')) === '(upl)') {
+                            $field = substr($field, strlen('(upl)'));
+                            if (empty($_FILES[$field])) $fields_not_empty = false;
+                            $upload = $s3->upload($bucket, $_FILES[$field]['name'], fopen($_FILES[$field]['tmp_name'], 'rb'), 'public-read');
+                            array_push($sql_fields, $upload->get('ObjectURL'));
+                        } elseif (substr($field, 0, strlen('(gen)')) === '(gen)') {
+                            $field = substr($field, strlen('(gen)'));
+                            $data = thumbnailImage($_FILES['subscription_image']['tmp_name']);
+                            $upload = $s3->upload($bucket, "{$_FILES['subscription_image']['name']}_thumbnail", $data, 'public-read');
+                            array_push($sql_fields, $upload->get('ObjectURL'));
+                        } else {
+                            if (empty($_POST[$field])) $fields_not_empty = false;
+                            array_push($sql_fields, $_POST[$field]);
+                        }
+                    }
+
+                    if (count($sql_fields) > 0) {
+                        $query = "UPDATE {$_GET['table']} SET " . join(", ", $sql_fields) . " WHERE id = {$_GET['id']}";
+                        pg_query($db, $query);
+                    }
+
+                    echo json_encode($images);
+                    break;
                 case 'videos_menu':
+                    $post_fields = array(
+                        'edition_name',
+                        'model_number',
+                        'model_name',
+                        'shoot_name',
+                        'video_title',
+                        '(len)length',
+                        '(size)size',
+                        'price_gbp',
+                        'price_usd',
+                        'price_eur',
+                        '(gen)thumbnail',
+                        '(upl)video',
+                        'product_id'
+                    );
+
+                    $sql_fields = array();
+                    $images = array();
+
+                    var_dump($_FILES);
+
+                    foreach ($post_fields as $field) {
+                        if (substr($field, 0, strlen('(upl)')) === '(upl)') {
+                            if (count($_FILES) > 0) {
+                                $field = substr($field, strlen('(upl)'));
+                                if (empty($_FILES[$field])) $fields_not_empty = false;
+                                $upload = $s3->upload($bucket, $_FILES[$field]['name'], fopen($_FILES[$field]['tmp_name'], 'rb'), 'public-read');
+                                array_push($sql_fields, "{$field}='{$upload->get('ObjectURL')}'");
+                            }
+                        } elseif (substr($field, 0, strlen('(len)')) === '(len)') {
+                            if (count($_FILES) > 0) {
+                                $field = substr($field, strlen('(len)'));
+                                $ffprobe = FFMpeg\FFProbe::create();
+                                $duration = $ffprobe->format($_FILES['video']['tmp_name'])->get('duration');
+                                array_push($sql_fields, "{$field}='" . intval($duration) . "'");
+                            }
+                        } elseif (substr($field, 0, strlen('(size)')) === '(size)') {
+                            if (count($_FILES) > 0) {
+                                $field = substr($field, strlen('(size)'));
+                                $size = $_FILES['video']['size'];
+                                array_push($sql_fields, "{$field}='{$size}'");
+                            }
+                        } elseif (substr($field, 0, strlen('(gen)')) === '(gen)') {
+                            if (count($_FILES) > 0) {
+                                $field = substr($field, strlen('(gen)'));
+                                $ffmpeg = FFMpeg\FFMpeg::create();
+                                $video = $ffmpeg->open($_FILES['video']['tmp_name']);
+                                $ffprobe = FFMpeg\FFProbe::create();
+                                $duration = $ffprobe->format($_FILES['video']['tmp_name'])->get('duration');
+                                $frame = $video->frame(FFMpeg\Coordinate\TimeCode::fromSeconds(intval($duration / 2)));
+                                //$thumbnail = pg_escape_bytea(base64_decode($frame->save("{$_FILES['video']['tmp_name']}_frame.jpg", false, true)));
+                                $thumbnail_name = "{$_FILES['video']['name']}_frame.jpg";
+                                $thumbnail_path = "/tmp/{$thumbnail_name}";
+                                $frame->save($thumbnail_path);
+                                $upload = $s3->upload($bucket, $thumbnail_name, fopen($thumbnail_path, 'rb'), 'public-read');
+                                array_push($sql_fields, "{$field}='{$upload->get('ObjectURL')}'");
+                            }
+                        } else {
+                            if (empty($_POST[$field])) {
+                                $fields_not_empty = false;
+                            } else {
+                                array_push($sql_fields, "{$field}='{$_POST[$field]}'");
+                            }
+                        }
+                    }
+
+                    if (count($sql_fields) > 0) {
+                        $query = "UPDATE {$_GET['table']} SET " . join(", ", $sql_fields) . " WHERE id = {$_GET['id']}";
+                        var_dump($query);
+                        pg_query($db, $query);
+                    }
+
+                    echo json_encode($images);
+                    break;
                 default:
                     die(404);
                     break;

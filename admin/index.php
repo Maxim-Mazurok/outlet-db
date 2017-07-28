@@ -23,6 +23,8 @@ $current_item = $matches[0][1];
             var form = $(this).closest('form');
             /*$.post($(form).attr('action'), $(form).serialize());*/
             var fd = new FormData(form.get(0));
+            $(this).text('submitting...').addClass('submitting');
+            var thiz = $(this);
             $.ajax({
                 url: $(form).attr('action') + '&batch=true',
                 data: fd,
@@ -31,6 +33,7 @@ $current_item = $matches[0][1];
                 contentType: false,
                 type: $(form).attr('method').toString().toUpperCase(),
                 complete: function () {
+                    $(thiz).text('done!');
                     window.location.reload()
                 }
             });
@@ -49,6 +52,7 @@ $current_item = $matches[0][1];
             $(this).closest('tr').children().each(function () {
                 switch ($(this).data('type')) {
                     case 'image':
+                    case 'video':
                         $(this).append('<input name="' + $(this).data('column') + '" type="file">');
                         break;
                     default:
@@ -65,6 +69,7 @@ $current_item = $matches[0][1];
             $(this).closest('tr').children().each(function () {
                 switch ($(this).data('type')) {
                     case 'image':
+                    case 'video':
                         var file = $(this).find('input')[0].files[0];
                         if (file !== undefined) {
                             fd.append($(this).data('column').toString(), file);
@@ -294,6 +299,8 @@ $current_item = $matches[0][1];
                 switch ($column) {
                     case 'id':
                     case 'thumbnail':
+                    case 'length':
+                    case 'size':
                         break;
                     case 'model_number':
                     case 'price_gbp':
@@ -306,6 +313,7 @@ $current_item = $matches[0][1];
                     case 'subscription_button':
                     case 'image_button':
                     case 'thumbnail_grey':
+                    case 'video':
                         echo "<label for='$column'>$column:</label>" . PHP_EOL;
                         echo "<input name='$column' id='$column' type='file'>" . PHP_EOL;
                         break;
@@ -357,7 +365,11 @@ $current_item = $matches[0][1];
                         case 'thumbnail':
                         case 'download_image':
                         case 'thumbnail_grey':
-                            echo "<td data-type='image' data-column='{$column}'><img title='click to show/hide full size image' height='100' src='{$datum->$column}'></td>" . PHP_EOL;
+                        case 'subscription_image':
+                        echo "<td data-type='image' data-column='{$column}'><img title='click to show/hide full size image' height='100' src='{$datum->$column}'></td>" . PHP_EOL;
+                            break;
+                        case 'video':
+                        echo "<td data-type='video' data-column='{$column}'><video width='320' height='240' controls><source src='{$datum->$column}' type='video'></video></td>" . PHP_EOL;
                             break;
                         default:
                             echo "<td data-column='{$column}'>{$datum->$column}</td>" . PHP_EOL;
