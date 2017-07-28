@@ -387,6 +387,38 @@ switch ($_GET['type']) {
                     break;
                 case 'images_menu':
                 case 'social_networks':
+                    $post_fields = array(
+                        'name',
+                        'url',
+                        'icon_color',
+                        '(upl)thumbnail_grey'
+                    );
+
+                    $sql_fields = array();
+                    $images = array();
+
+                    foreach ($post_fields as $field) {
+                        if (substr($field, 0, strlen('(upl)')) === '(upl)') {
+                            $field = substr($field, strlen('(upl)'));
+                            if (!empty($_FILES[$field])) {
+                                $upload = $s3->upload($bucket, $_FILES[$field]['name'], fopen($_FILES[$field]['tmp_name'], 'rb'), 'public-read');
+                                array_push($sql_fields, "{$field}='{$upload->get('ObjectURL')}'");
+                                array_push($images, array($field, $upload->get('ObjectURL')));
+                            }
+                        } else {
+                            if (array_key_exists($field, $_POST)) {
+                                array_push($sql_fields, "{$field}='{$_POST[$field]}'");
+                            }
+                        }
+                    }
+
+                    if (count($sql_fields) > 0) {
+                        $query = "UPDATE {$_GET['table']} SET " . join(", ", $sql_fields) . " WHERE id = {$_GET['id']}";
+                        pg_query($db, $query);
+                    }
+
+                    echo json_encode($images);
+                    break;
                 case 'subscriptions_menu':
                 case 'videos_menu':
                 default:
