@@ -24,14 +24,14 @@ $current_item = $matches[0][1];
             /*$.post($(form).attr('action'), $(form).serialize());*/
             var fd = new FormData(form.get(0));
             $.ajax({
-                url: $(form).attr('action'),
+                url: $(form).attr('action') + '&batch=true',
                 data: fd,
                 cache: false,
                 processData: false,
                 contentType: false,
                 type: $(form).attr('method').toString().toUpperCase(),
                 complete: function () {
-                    window.location.reload()
+                    //window.location.reload()
                 }
             });
         }).on('click', 'img', function () {
@@ -281,6 +281,7 @@ $current_item = $matches[0][1];
     switch ($current_item) {
         case 'editions':
         case 'edition_menu':
+        case 'images_menu':
             $json = file_get_contents("http://127.0.0.1/api/?type=get&table=$current_item");
             $data = json_decode($json);
             $columns = array_keys((array)$data[0]);
@@ -289,8 +290,12 @@ $current_item = $matches[0][1];
             foreach ($columns as $column) {
                 switch ($column) {
                     case 'id':
+                    case 'thumbnail':
                         break;
                     case 'model_number':
+                    case 'price_gbp':
+                    case 'price_usd':
+                    case 'price_eur':
                         echo "<label for='$column'>$column:</label>" . PHP_EOL;
                         echo "<input name='$column' id='$column' type='number'>" . PHP_EOL;
                         break;
@@ -299,6 +304,14 @@ $current_item = $matches[0][1];
                     case 'image_button':
                         echo "<label for='$column'>$column:</label>" . PHP_EOL;
                         echo "<input name='$column' id='$column' type='file'>" . PHP_EOL;
+                        break;
+                    case 'download_image':
+                        echo "<label for='$column'>$column:</label>" . PHP_EOL;
+                        echo "<input multiple name='{$column}[]' id='$column' type='file'>" . PHP_EOL;
+                        break;
+                    case 'product_id':
+                        echo "<label for='$column'>$column prefix:</label>" . PHP_EOL;
+                        echo "<input name='$column' id='$column'>" . PHP_EOL;
                         break;
                     default:
                         echo "<label for='$column'>$column:</label>" . PHP_EOL;
@@ -337,6 +350,8 @@ $current_item = $matches[0][1];
                         case 'video_button':
                         case 'subscription_button':
                         case 'image_button':
+                        case 'thumbnail':
+                        case 'download_image':
                             echo "<td data-type='image' data-column='{$column}'><img title='click to show/hide full size image' height='100' src='{$datum->$column}'></td>" . PHP_EOL;
                             break;
                         default:
@@ -352,7 +367,6 @@ $current_item = $matches[0][1];
 
             <?php
             break;
-        case 'images_menu':
         case 'social_networks':
         case 'subscriptions_menu':
         case 'videos_menu':

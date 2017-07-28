@@ -117,29 +117,96 @@ switch ($_GET['type']) {
                     'price_eur'
                 );
 
-                $sql_fields = array();
+                $sql_fields = array(
+                    'edition_name' => NULL,
+                    'model_number' => NULL,
+                    'model_name' => NULL,
+                    'shoot_name' => NULL,
+                    'thumbnail' => NULL,
+                    'download_image' => NULL,
+                    'product_id' => NULL,
+                    'price_gbp' => NULL,
+                    'price_usd' => NULL,
+                    'price_eur' => NULL
+                );
+
+                $batch = array_key_exists('batch', $_GET) && $_GET['batch'] === 'true';
+                $product_id_prefix = 'NULL';
 
                 $fields_not_empty = true;
                 foreach ($post_fields as $field) {
                     if (substr($field, 0, 5) === '(upl)') {
                         $field = substr($field, 5);
-                        if (empty($_FILES[$field])) $fields_not_empty = false;
-                        $upload = $s3->upload($bucket, $_FILES[$field]['name'], fopen($_FILES[$field]['tmp_name'], 'rb'), 'public-read');
-                        array_push($sql_fields, $upload->get('ObjectURL'));
+                        if (empty($_FILES[$field])) {
+                            $fields_not_empty = false;
+                        } else {
+                            if ($batch) {
+                                for ($i = 0; $i < count($_FILES[$field]['name']); $i++) {
+                                    $upload = $s3->upload($bucket, $_FILES[$field]['name'][$i], fopen($_FILES[$field]['tmp_name'][$i], 'rb'), 'public-read');
+                                    if (!array_key_exists('upload', $sql_fields)) $sql_fields['upload'] = [];
+                                    array_push($sql_fields['upload'], $upload->get('ObjectURL'));
+                                }
+                            } else {
+                                $upload = $s3->upload($bucket, $_FILES[$field]['name'], fopen($_FILES[$field]['tmp_name'], 'rb'), 'public-read');
+                                array_push($sql_fields, $upload->get('ObjectURL'));
+                            }
+                        }
                     } elseif (substr($field, 0, strlen('(gen)')) === '(gen)') {
                         $field = substr($field, strlen('(gen)'));
-                        $data = thumbnailImage($_FILES['download_image']['tmp_name']);
-                        $upload = $s3->upload($bucket, "{$_FILES['download_image']['name']}_thumbnail", $data, 'public-read');
-                        array_push($sql_fields, $upload->get('ObjectURL'));
+                        if (empty($_FILES['download_image'])) {
+                            $fields_not_empty = false;
+                        } else {
+                            if ($batch) {
+                                for ($i = 0; $i < count($_FILES['download_image']['name']); $i++) {
+                                    $data = thumbnailImage($_FILES['download_image']['tmp_name'][$i]);
+                                    $upload = $s3->upload($bucket, "{$_FILES['download_image']['name'][$i]}_thumbnail", $data, 'public-read');
+                                    if (!array_key_exists('upload_thumbnail', $sql_fields)) $sql_fields['upload_thumbnail'] = [];
+                                    array_push($sql_fields['upload_thumbnail'], $upload->get('ObjectURL'));
+                                }
+                            } else {
+                                $data = thumbnailImage($_FILES['download_image']['tmp_name']);
+                                $upload = $s3->upload($bucket, "{$_FILES['download_image']['name']}_thumbnail", $data, 'public-read');
+                                array_push($sql_fields, $upload->get('ObjectURL'));
+                            }
+                        }
+                    } elseif ($batch && $field === 'product_id') {
+                        $product_id_prefix = $_POST[$field];
                     } else {
                         if (empty($_POST[$field])) $fields_not_empty = false;
-                        array_push($sql_fields, $_POST[$field]);
+                        $sql_fields[$field] = $_POST[$field];
                     }
                 }
 
+                //var_dump($fields_not_empty, $sql_fields);
+
                 if ($fields_not_empty) {
-                    $query = "INSERT INTO {$_GET['table']} VALUES ('" . join("','", $sql_fields) . "')";
-                    pg_query($db, $query);
+                    if ($batch) {
+                        $r = pg_query($db, "SELECT MAX(CAST(RIGHT(product_id, 4) AS INTEGER)) as prod_id FROM {$_GET['table']} WHERE product_id LIKE '{$_POST['product_id']}_%';");
+                        $res = pg_fetch_assoc($r);
+                        $prod_id = intval($res['prod_id']) + 1;
+
+                        $upload_array = $sql_fields['upload'];
+                        $upload_array_thumb = $sql_fields['upload_thumbnail'];
+                        unset($sql_fields['upload']);
+                        unset($sql_fields['upload_thumbnail']);
+
+                        $i = 0;
+                        foreach ($upload_array as $sql_field) {
+                            $sql_fields['product_id'] = $product_id_prefix . '_' . str_pad(strval($prod_id), 4, '0', STR_PAD_LEFT);
+                            $sql_fields['download_image'] = $sql_field;
+                            $sql_fields['thumbnail'] = $upload_array_thumb[$i];
+                            $prod_id++;
+
+                            $query = "INSERT INTO {$_GET['table']} VALUES ('" . join("','", $sql_fields) . "')";
+                            var_dump($query);
+                            pg_query($db, $query);
+
+                            $i++;
+                        }
+                    } else {
+                        $query = "INSERT INTO {$_GET['table']} VALUES ('" . join("','", $sql_fields) . "')";
+                        pg_query($db, $query);
+                    }
                 }
                 break;
             case 'social_networks':
@@ -318,8 +385,7 @@ switch ($_GET['type']) {
 
                     echo json_encode($images);
                     break;
-                case
-                'images_menu':
+                case 'images_menu':
                 case 'social_networks':
                 case 'subscriptions_menu':
                 case 'videos_menu':
@@ -329,7 +395,7 @@ switch ($_GET['type']) {
             }
             break;
         } else {
-            die(500);
+            die(501);
         }
 
     case 'delete':
