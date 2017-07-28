@@ -1,7 +1,7 @@
-Authtype Basic
-AuthName "Outlet DB API authentication"
-AuthUserFile /app/api/.htpasswd
-Require valid-user
+#Authtype Basic
+#AuthName "Outlet DB API authentication"
+#AuthUserFile /home/maxim/web/outlet-db/api/.htpasswd
+#Require valid-user
 
 RewriteEngine on
 RewriteCond %{REQUEST_FILENAME} !-f
