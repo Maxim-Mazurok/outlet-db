@@ -290,46 +290,152 @@ switch ($_GET['type']) {
                     'product_id'
                 );
 
-                $sql_fields = array();
+                $sql_fields = array(
+                    'edition_name' => NULL,
+                    'model_number' => NULL,
+                    'model_name' => NULL,
+                    'shoot_name' => NULL,
+                    'video_title' => NULL,
+                    'length' => NULL,
+                    'size' => NULL,
+                    'price_gbp' => NULL,
+                    'price_usd' => NULL,
+                    'price_eur' => NULL,
+                    'thumbnail' => NULL,
+                    'video' => NULL,
+                    'product_id' => NULL
+                );
+
+                $batch = array_key_exists('batch', $_GET) && $_GET['batch'] === 'true';
+                $product_id_prefix = 'NULL';
 
                 $fields_not_empty = true;
                 foreach ($post_fields as $field) {
+                    error_log('MAXTEST: ' . $field . PHP_EOL);
                     if (substr($field, 0, strlen('(upl)')) === '(upl)') {
                         $field = substr($field, strlen('(upl)'));
-                        if (empty($_FILES[$field])) $fields_not_empty = false;
-                        $upload = $s3->upload($bucket, $_FILES[$field]['name'], fopen($_FILES[$field]['tmp_name'], 'rb'), 'public-read');
-                        array_push($sql_fields, $upload->get('ObjectURL'));
+                        if (empty($_FILES[$field])) {
+                            $fields_not_empty = false;
+                        } else {
+                            if ($batch) {
+                                for ($i = 0; $i < count($_FILES[$field]['name']); $i++) {
+                                    $upload = $s3->upload($bucket, $_FILES[$field]['name'][$i], fopen($_FILES[$field]['tmp_name'][$i], 'rb'), 'public-read');
+                                    if (!array_key_exists('upload', $sql_fields)) $sql_fields['upload'] = [];
+                                    array_push($sql_fields['upload'], $upload->get('ObjectURL'));
+                                }
+                            } else {
+                                $upload = $s3->upload($bucket, $_FILES[$field]['name'], fopen($_FILES[$field]['tmp_name'], 'rb'), 'public-read');
+                                array_push($sql_fields, $upload->get('ObjectURL'));
+                            }
+                        }
                     } elseif (substr($field, 0, strlen('(len)')) === '(len)') {
-                        $field = substr($field, strlen('(len)'));
-                        $ffprobe = FFMpeg\FFProbe::create();
-                        $duration = $ffprobe->format($_FILES['video']['tmp_name'])->get('duration');
-                        array_push($sql_fields, intval($duration));
+                        if (empty($_FILES['video'])) {
+                            $fields_not_empty = false;
+                        } else {
+                            $field = substr($field, strlen('(len)'));
+                            if ($batch) {
+                                for ($i = 0; $i < count($_FILES['video']['name']); $i++) {
+                                    $ffprobe = FFMpeg\FFProbe::create();
+                                    $duration = $ffprobe->format($_FILES['video']['tmp_name'][$i])->get('duration');
+                                    if (!array_key_exists('video_len', $sql_fields)) $sql_fields['video_len'] = [];
+                                    array_push($sql_fields['video_len'], intval($duration));
+                                }
+                            } else {
+                                $ffprobe = FFMpeg\FFProbe::create();
+                                $duration = $ffprobe->format($_FILES['video']['tmp_name'])->get('duration');
+                                array_push($sql_fields, intval($duration));
+                            }
+                        }
                     } elseif (substr($field, 0, strlen('(size)')) === '(size)') {
-                        $field = substr($field, strlen('(size)'));
-                        $size = $_FILES['video']['size'];
-                        array_push($sql_fields, $size);
+                        if (empty($_FILES['video'])) {
+                            $fields_not_empty = false;
+                        } else {
+                            $field = substr($field, strlen('(size)'));
+                            if ($batch) {
+                                for ($i = 0; $i < count($_FILES['video']['name']); $i++) {
+                                    $size = $_FILES['video']['size'][$i];
+                                    if (!array_key_exists('video_size', $sql_fields)) $sql_fields['video_size'] = [];
+                                    array_push($sql_fields['video_size'], $size);
+                                }
+                            } else {
+                                $size = $_FILES['video']['size'];
+                                array_push($sql_fields, intval($duration));
+                            }
+                        }
                     } elseif (substr($field, 0, strlen('(gen)')) === '(gen)') {
-                        $field = substr($field, strlen('(gen)'));
-                        $ffmpeg = FFMpeg\FFMpeg::create();
-                        $video = $ffmpeg->open($_FILES['video']['tmp_name']);
-                        $ffprobe = FFMpeg\FFProbe::create();
-                        $duration = $ffprobe->format($_FILES['video']['tmp_name'])->get('duration');
-                        $frame = $video->frame(FFMpeg\Coordinate\TimeCode::fromSeconds(intval($duration / 2)));
-                        //$thumbnail = pg_escape_bytea(base64_decode($frame->save("{$_FILES['video']['tmp_name']}_frame.jpg", false, true)));
-                        $thumbnail_name = "{$_FILES['video']['name']}_frame.jpg";
-                        $thumbnail_path = "/tmp/{$thumbnail_name}";
-                        $frame->save($thumbnail_path);
-                        $upload = $s3->upload($bucket, $thumbnail_name, fopen($thumbnail_path, 'rb'), 'public-read');
-                        array_push($sql_fields, $upload->get('ObjectURL'));
+                        if (empty($_FILES['video'])) {
+                            $fields_not_empty = false;
+                        } else {
+                            if ($batch) {
+                                $field = substr($field, strlen('(gen)'));
+                                for ($i = 0; $i < count($_FILES['video']['name']); $i++) {
+                                    $ffmpeg = FFMpeg\FFMpeg::create();
+                                    $video = $ffmpeg->open($_FILES['video']['tmp_name'][$i]);
+                                    $ffprobe = FFMpeg\FFProbe::create();
+                                    $duration = $ffprobe->format($_FILES['video']['tmp_name'][$i])->get('duration');
+                                    $frame = $video->frame(FFMpeg\Coordinate\TimeCode::fromSeconds(intval($duration / 2)));
+                                    $thumbnail_name = "{$_FILES['video']['name'][$i]}_frame.jpg";
+                                    $thumbnail_path = "/tmp/{$thumbnail_name}";
+                                    $frame->save($thumbnail_path);
+                                    $upload = $s3->upload($bucket, $thumbnail_name, fopen($thumbnail_path, 'rb'), 'public-read');
+                                    if (!array_key_exists('video_thumbnail', $sql_fields)) $sql_fields['video_thumbnail'] = [];
+                                    array_push($sql_fields['video_thumbnail'], $upload->get('ObjectURL'));
+                                }
+                            } else {
+                                $ffmpeg = FFMpeg\FFMpeg::create();
+                                $video = $ffmpeg->open($_FILES['video']['tmp_name']);
+                                $ffprobe = FFMpeg\FFProbe::create();
+                                $duration = $ffprobe->format($_FILES['video']['tmp_name'])->get('duration');
+                                $frame = $video->frame(FFMpeg\Coordinate\TimeCode::fromSeconds(intval($duration / 2)));
+                                $thumbnail_name = "{$_FILES['video']['name']}_frame.jpg";
+                                $thumbnail_path = "/tmp/{$thumbnail_name}";
+                                $frame->save($thumbnail_path);
+                                $upload = $s3->upload($bucket, $thumbnail_name, fopen($thumbnail_path, 'rb'), 'public-read');
+                                array_push($sql_fields, $upload->get('ObjectURL'));
+                            }
+                        }
+                    } elseif ($batch && $field === 'product_id') {
+                        $product_id_prefix = $_POST[$field];
                     } else {
                         if (empty($_POST[$field])) $fields_not_empty = false;
-                        array_push($sql_fields, $_POST[$field]);
+                        $sql_fields[$field] = $_POST[$field];
                     }
                 }
 
                 if ($fields_not_empty) {
-                    $query = "INSERT INTO {$_GET['table']} VALUES ('" . join("','", $sql_fields) . "')";
-                    pg_query($db, $query);
+                    if ($batch) {
+                        $r = pg_query($db, "SELECT MAX(CAST(RIGHT(product_id, 4) AS INTEGER)) as prod_id FROM {$_GET['table']} WHERE product_id LIKE '{$_POST['product_id']}_%';");
+                        $res = pg_fetch_assoc($r);
+                        $prod_id = intval($res['prod_id']) + 1;
+
+                        $upload_array = $sql_fields['upload'];
+                        $upload_array_thumb = $sql_fields['video_thumbnail'];
+                        $upload_array_size = $sql_fields['video_size'];
+                        $upload_array_len = $sql_fields['video_len'];
+                        unset($sql_fields['upload']);
+                        unset($sql_fields['video_thumbnail']);
+                        unset($sql_fields['video_size']);
+                        unset($sql_fields['video_len']);
+
+                        $i = 0;
+                        foreach ($upload_array as $sql_field) {
+                            $sql_fields['product_id'] = $product_id_prefix . '_' . str_pad(strval($prod_id), 4, '0', STR_PAD_LEFT);
+                            $sql_fields['video'] = $sql_field;
+                            $sql_fields['thumbnail'] = $upload_array_thumb[$i];
+                            $sql_fields['size'] = $upload_array_size[$i];
+                            $sql_fields['length'] = $upload_array_len[$i];
+                            $prod_id++;
+
+                            $query = "INSERT INTO {$_GET['table']} VALUES ('" . join("','", $sql_fields) . "')";
+                            var_dump($query);
+                            pg_query($db, $query);
+
+                            $i++;
+                        }
+                    } else {
+                        $query = "INSERT INTO {$_GET['table']} VALUES ('" . join("','", $sql_fields) . "')";
+                        pg_query($db, $query);
+                    }
                 }
                 break;
             default:
@@ -526,8 +632,6 @@ switch ($_GET['type']) {
                     $sql_fields = array();
                     $images = array();
 
-                    var_dump($_FILES);
-
                     foreach ($post_fields as $field) {
                         if (substr($field, 0, strlen('(upl)')) === '(upl)') {
                             if (count($_FILES) > 0) {
@@ -557,7 +661,6 @@ switch ($_GET['type']) {
                                 $ffprobe = FFMpeg\FFProbe::create();
                                 $duration = $ffprobe->format($_FILES['video']['tmp_name'])->get('duration');
                                 $frame = $video->frame(FFMpeg\Coordinate\TimeCode::fromSeconds(intval($duration / 2)));
-                                //$thumbnail = pg_escape_bytea(base64_decode($frame->save("{$_FILES['video']['tmp_name']}_frame.jpg", false, true)));
                                 $thumbnail_name = "{$_FILES['video']['name']}_frame.jpg";
                                 $thumbnail_path = "/tmp/{$thumbnail_name}";
                                 $frame->save($thumbnail_path);
