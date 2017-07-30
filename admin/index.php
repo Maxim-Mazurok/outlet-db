@@ -32,6 +32,9 @@ $current_item = $matches[0][1];
                 processData: false,
                 contentType: false,
                 type: $(form).attr('method').toString().toUpperCase(),
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader ("Authorization", "Basic " + btoa("api-user:StrongPassword2017"));
+                },
                 complete: function () {
                     $(thiz).attr('value', 'done!');
                     //window.location.reload()
@@ -99,6 +102,9 @@ $current_item = $matches[0][1];
                 processData: false,
                 contentType: false,
                 type: 'POST',
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader ("Authorization", "Basic " + btoa("api-user:StrongPassword2017"));
+                },
                 complete: function (res) {
                     $(thiz).text('saved!').removeClass('saving').addClass('saved');
                     if (res.responseText.trim() === 'reload') {
@@ -131,6 +137,9 @@ $current_item = $matches[0][1];
                 processData: false,
                 contentType: false,
                 type: 'GET',
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader ("Authorization", "Basic " + btoa("api-user:StrongPassword2017"));
+                },
                 complete: function () {
                     $(thiz).text('deleted!').removeClass('deleting').addClass('deleted');
                     setTimeout(function () {
