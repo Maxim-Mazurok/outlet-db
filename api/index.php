@@ -475,6 +475,7 @@ switch ($_GET['type']) {
                         pg_query($db, "
                         UPDATE {$_GET['table']} 
                         SET name='{$_POST['name']}'
+                        WHERE id = {$_GET['id']}
                         ");
                     }
                     break;
