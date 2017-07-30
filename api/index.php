@@ -408,40 +408,23 @@ switch ($_GET['type']) {
                             if (empty($_FILES[$field])) {
                                 $fields_not_empty = false;
                             } else {
-                                if ($batch) {
-                                    for ($i = 0; $i < count($_FILES[$field]['name']); $i++) {
-                                        $upload = $s3->upload($bucket, $_FILES[$field]['name'][$i], fopen($_FILES[$field]['tmp_name'][$i], 'rb'), 'public-read');
-                                        if (!array_key_exists('upload', $sql_fields)) $sql_fields['upload'] = [];
-                                        array_push($sql_fields['upload'], $upload->get('ObjectURL'));
-                                    }
-                                } else {
-                                    $upload = $s3->upload($bucket, $_FILES[$field]['name'], fopen($_FILES[$field]['tmp_name'], 'rb'), 'public-read');
-                                    array_push($sql_fields, $upload->get('ObjectURL'));
-                                }
+                                $upload = $s3->upload($bucket, $_FILES[$field]['name'], fopen($_FILES[$field]['tmp_name'], 'rb'), 'public-read');
+                                array_push($sql_fields, "{$field}='{$upload->get('ObjectURL')}'");
+                                array_push($images, array($field, $upload->get('ObjectURL')));
                             }
                         } elseif (substr($field, 0, strlen('(gen)')) === '(gen)') {
                             $field = substr($field, strlen('(gen)'));
                             if (empty($_FILES['download_image'])) {
                                 $fields_not_empty = false;
                             } else {
-                                if ($batch) {
-                                    for ($i = 0; $i < count($_FILES['download_image']['name']); $i++) {
-                                        $data = thumbnailImage($_FILES['download_image']['tmp_name'][$i]);
-                                        $upload = $s3->upload($bucket, "{$_FILES['download_image']['name'][$i]}_thumbnail", $data, 'public-read');
-                                        if (!array_key_exists('upload_thumbnail', $sql_fields)) $sql_fields['upload_thumbnail'] = [];
-                                        array_push($sql_fields['upload_thumbnail'], $upload->get('ObjectURL'));
-                                    }
-                                } else {
-                                    $data = thumbnailImage($_FILES['download_image']['tmp_name']);
-                                    $upload = $s3->upload($bucket, "{$_FILES['download_image']['name']}_thumbnail", $data, 'public-read');
-                                    array_push($sql_fields, $upload->get('ObjectURL'));
-                                }
+                                $data = thumbnailImage($_FILES['download_image']['tmp_name']);
+                                $upload = $s3->upload($bucket, "{$_FILES['download_image']['name']}_thumbnail", $data, 'public-read');
+                                array_push($sql_fields, "{$field}='{$upload->get('ObjectURL')}'");
+                                array_push($images, array($field, $upload->get('ObjectURL')));
                             }
-                        } elseif ($batch && $field === 'product_id') {
-                            $product_id_prefix = $_POST[$field];
                         } else {
                             if (empty($_POST[$field])) $fields_not_empty = false;
-                            $sql_fields[$field] = $_POST[$field];
+                            $sql_fields[$field] = "{$field}='{$_POST[$field]}'";
                         }
                     }
 

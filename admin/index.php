@@ -53,7 +53,9 @@ $current_item = $matches[0][1];
                 switch ($(this).data('type')) {
                     case 'image':
                     case 'video':
-                        $(this).append('<input name="' + $(this).data('column') + '" type="file">');
+                        if ($(this).data('column') !== 'thumbnail') {
+                            $(this).append('<input name="' + $(this).data('column') + '" type="file">');
+                        }
                         break;
                     default:
                         if ($(this).data('column') !== undefined) {
@@ -70,11 +72,13 @@ $current_item = $matches[0][1];
                 switch ($(this).data('type')) {
                     case 'image':
                     case 'video':
-                        var file = $(this).find('input')[0].files[0];
-                        if (file !== undefined) {
-                            fd.append($(this).data('column').toString(), file);
+                        if ($(this).data('column') !== 'thumbnail') {
+                            var file = $(this).find('input')[0].files[0];
+                            if (file !== undefined) {
+                                fd.append($(this).data('column').toString(), file);
+                            }
+                            $(this).find('input').hide();
                         }
-                        $(this).find('input').hide();
                         break;
                     default:
                         if ($(this).data('column') !== undefined) {
@@ -366,10 +370,10 @@ $current_item = $matches[0][1];
                         case 'download_image':
                         case 'thumbnail_grey':
                         case 'subscription_image':
-                        echo "<td data-type='image' data-column='{$column}'><img title='click to show/hide full size image' height='100' src='{$datum->$column}'></td>" . PHP_EOL;
+                            echo "<td data-type='image' data-column='{$column}'><img title='click to show/hide full size image' height='100' src='{$datum->$column}'></td>" . PHP_EOL;
                             break;
                         case 'video':
-                        echo "<td data-type='video' data-column='{$column}'><video width='320' height='240' controls><source src='{$datum->$column}' type='video'></video></td>" . PHP_EOL;
+                            echo "<td data-type='video' data-column='{$column}'><video width='320' height='240' controls><source src='{$datum->$column}' type='video'></video></td>" . PHP_EOL;
                             break;
                         default:
                             echo "<td data-column='{$column}'>{$datum->$column}</td>" . PHP_EOL;
