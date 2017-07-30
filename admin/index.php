@@ -296,7 +296,16 @@ $current_item = $matches[0][1];
         case 'social_networks':
         case 'subscriptions_menu':
         case 'videos_menu':
-            $json = file_get_contents("https://outlet-db.herokuapp.com/api/?type=get&table=$current_item");
+            $username = 'api-user';
+            $password = 'StrongPassword2017';
+
+            $context = stream_context_create(array(
+                'http' => array(
+                    'header' => "Authorization: Basic " . base64_encode("$username:$password")
+                )
+            ));
+            $url = "https://outlet-db.herokuapp.com/api/?type=get&table=$current_item";
+            $json = file_get_contents($url, false, $context);
             $data = json_decode($json);
             $columns = array_keys((array)$data[0]);
             echo "<h1>Add new $current_item item:</h1>" . PHP_EOL;
