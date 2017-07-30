@@ -37,7 +37,7 @@ $current_item = $matches[0][1];
                 },
                 complete: function () {
                     $(thiz).attr('value', 'done!');
-                    //window.location.reload()
+                    window.location.reload()
                 }
             });
         }).on('click', 'img', function () {
