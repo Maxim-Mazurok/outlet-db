@@ -198,7 +198,6 @@ switch ($_GET['type']) {
                             $prod_id++;
 
                             $query = "INSERT INTO {$_GET['table']} VALUES ('" . join("','", $sql_fields) . "')";
-                            var_dump($query);
                             pg_query($db, $query);
 
                             $i++;
@@ -248,7 +247,18 @@ switch ($_GET['type']) {
                     'product_id'
                 );
 
-                $sql_fields = array();
+                $sql_fields = array(
+                    'edition_name' => NULL,
+                    'model_number' => NULL,
+                    'model_name' => NULL,
+                    'shoot_name' => NULL,
+                    'thumbnail' => NULL,
+                    'subscription_image' => NULL,
+                    'product_id' => NULL
+                );
+
+                $batch = array_key_exists('batch', $_GET) && $_GET['batch'] === 'true';
+                $product_id_prefix = 'NULL';
 
                 $fields_not_empty = true;
                 foreach ($post_fields as $field) {
@@ -256,21 +266,35 @@ switch ($_GET['type']) {
                         $field = substr($field, strlen('(upl)'));
                         if (empty($_FILES[$field])) $fields_not_empty = false;
                         $upload = $s3->upload($bucket, $_FILES[$field]['name'], fopen($_FILES[$field]['tmp_name'], 'rb'), 'public-read');
-                        array_push($sql_fields, $upload->get('ObjectURL'));
+                        $sql_fields[$field] = $upload->get('ObjectURL');
                     } elseif (substr($field, 0, strlen('(gen)')) === '(gen)') {
                         $field = substr($field, strlen('(gen)'));
                         $data = thumbnailImage($_FILES['subscription_image']['tmp_name']);
                         $upload = $s3->upload($bucket, "{$_FILES['subscription_image']['name']}_thumbnail", $data, 'public-read');
-                        array_push($sql_fields, $upload->get('ObjectURL'));
+                        $sql_fields[$field] = $upload->get('ObjectURL');
+                    } elseif ($batch && $field === 'product_id') {
+                        $product_id_prefix = $_POST[$field];
                     } else {
                         if (empty($_POST[$field])) $fields_not_empty = false;
-                        array_push($sql_fields, $_POST[$field]);
+                        $sql_fields[$field] = $_POST[$field];
                     }
                 }
 
                 if ($fields_not_empty) {
-                    $query = "INSERT INTO {$_GET['table']} VALUES ('" . join("','", $sql_fields) . "')";
-                    pg_query($db, $query);
+                    if ($batch) {
+                        $r = pg_query($db, "SELECT MAX(CAST(RIGHT(product_id, 4) AS INTEGER)) as prod_id FROM {$_GET['table']} WHERE product_id LIKE '{$_POST['product_id']}_%';");
+                        $res = pg_fetch_assoc($r);
+                        $prod_id = intval($res['prod_id']) + 1;
+
+                        $sql_fields['product_id'] = $product_id_prefix . '_' . str_pad(strval($prod_id), 4, '0', STR_PAD_LEFT);
+
+                        $query = "INSERT INTO {$_GET['table']} VALUES ('" . join("','", $sql_fields) . "')";
+                        pg_query($db, $query);
+                        echo 'reload';
+                    } else {
+                        $query = "INSERT INTO {$_GET['table']} VALUES ('" . join("','", $sql_fields) . "')";
+                        pg_query($db, $query);
+                    }
                 }
                 break;
             case 'videos_menu':
@@ -427,7 +451,6 @@ switch ($_GET['type']) {
                             $prod_id++;
 
                             $query = "INSERT INTO {$_GET['table']} VALUES ('" . join("','", $sql_fields) . "')";
-                            var_dump($query);
                             pg_query($db, $query);
 
                             $i++;
@@ -591,17 +614,24 @@ switch ($_GET['type']) {
                     foreach ($post_fields as $field) {
                         if (substr($field, 0, strlen('(upl)')) === '(upl)') {
                             $field = substr($field, strlen('(upl)'));
-                            if (empty($_FILES[$field])) $fields_not_empty = false;
-                            $upload = $s3->upload($bucket, $_FILES[$field]['name'], fopen($_FILES[$field]['tmp_name'], 'rb'), 'public-read');
-                            array_push($sql_fields, $upload->get('ObjectURL'));
+                            if (empty($_FILES[$field])) {
+                                $fields_not_empty = false;
+                            } else {
+                                $upload = $s3->upload($bucket, $_FILES[$field]['name'], fopen($_FILES[$field]['tmp_name'], 'rb'), 'public-read');
+                                array_push($sql_fields, "{$field}='{$upload->get('ObjectURL')}'");
+                            }
                         } elseif (substr($field, 0, strlen('(gen)')) === '(gen)') {
                             $field = substr($field, strlen('(gen)'));
-                            $data = thumbnailImage($_FILES['subscription_image']['tmp_name']);
-                            $upload = $s3->upload($bucket, "{$_FILES['subscription_image']['name']}_thumbnail", $data, 'public-read');
-                            array_push($sql_fields, $upload->get('ObjectURL'));
+                            if (empty($_FILES[$field])) {
+                                $fields_not_empty = false;
+                            } else {
+                                $data = thumbnailImage($_FILES['subscription_image']['tmp_name']);
+                                $upload = $s3->upload($bucket, "{$_FILES['subscription_image']['name']}_thumbnail", $data, 'public-read');
+                                array_push($sql_fields, "{$field}='{$upload->get('ObjectURL')}'");
+                            }
                         } else {
                             if (empty($_POST[$field])) $fields_not_empty = false;
-                            array_push($sql_fields, $_POST[$field]);
+                            array_push($sql_fields, "{$field}='{$_POST[$field]}'");
                         }
                     }
 
@@ -630,7 +660,6 @@ switch ($_GET['type']) {
                     );
 
                     $sql_fields = array();
-                    $images = array();
 
                     foreach ($post_fields as $field) {
                         if (substr($field, 0, strlen('(upl)')) === '(upl)') {
@@ -678,11 +707,10 @@ switch ($_GET['type']) {
 
                     if (count($sql_fields) > 0) {
                         $query = "UPDATE {$_GET['table']} SET " . join(", ", $sql_fields) . " WHERE id = {$_GET['id']}";
-                        var_dump($query);
                         pg_query($db, $query);
                     }
 
-                    echo json_encode($images);
+                    echo 'reload';
                     break;
                 default:
                     die(404);

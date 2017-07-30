@@ -101,7 +101,9 @@ $current_item = $matches[0][1];
                 type: 'POST',
                 complete: function (res) {
                     $(thiz).text('saved!').removeClass('saving').addClass('saved');
-                    if (res.responseText.trim().length > 0) {
+                    if (res.responseText.trim() === 'reload') {
+                        window.location.reload();
+                    } else if (res.responseText.trim().length > 0) {
                         res = JSON.parse(res.responseText);
                         if (res.length > 0) {
                             res.forEach(function (dat) {
@@ -317,10 +319,11 @@ $current_item = $matches[0][1];
                     case 'subscription_button':
                     case 'image_button':
                     case 'thumbnail_grey':
-                    case 'video':
+                    case 'subscription_image':
                         echo "<label for='$column'>$column:</label>" . PHP_EOL;
-                        echo "<input multiple name='{$column}[]' id='$column' type='file'>" . PHP_EOL;
+                        echo "<input name='{$column}' id='$column' type='file'>" . PHP_EOL;
                         break;
+                    case 'video':
                     case 'download_image':
                         echo "<label for='$column'>$column:</label>" . PHP_EOL;
                         echo "<input multiple name='{$column}[]' id='$column' type='file'>" . PHP_EOL;
