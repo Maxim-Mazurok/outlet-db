@@ -15,8 +15,10 @@ $current_item = $matches[0][1];
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700&amp;subset=cyrillic,latin-ext"
           rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.1.20/jquery.fancybox.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.28.15/js/jquery.tablesorter.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.1.20/jquery.fancybox.min.js"></script>
     <title>Outlet DB Admin</title>
     <script>
         $(document)
@@ -42,16 +44,6 @@ $current_item = $matches[0][1];
                         window.location.reload()
                     }
                 });
-            })
-            .on('click', 'img', function () {
-                switch ($(this).attr('height')) {
-                    case '100':
-                        $(this).removeAttr('height');
-                        break;
-                    default:
-                        $(this).attr('height', '100');
-                        break;
-                }
             })
             .on('click', 'span.edit', function () {
                 var id = $(this).data('item-id');
@@ -441,7 +433,7 @@ $current_item = $matches[0][1];
                         case 'download_image':
                         case 'thumbnail_grey':
                         case 'subscription_image':
-                            echo "<td data-type='image' data-column='{$column}'><img title='click to show/hide full size image' height='100' src='{$datum->$column}'></td>" . PHP_EOL;
+                            echo "<td data-type='image' data-column='{$column}'><a data-fancybox='gallery' href='{$datum->$column}'><img title='click to view full size image' height='100' src='{$datum->$column}'></a></td>" . PHP_EOL;
                             break;
                         case 'video':
                             echo "<td data-type='video' data-column='{$column}'><video height='240' controls><source src='{$datum->$column}'></video></td>" . PHP_EOL;
