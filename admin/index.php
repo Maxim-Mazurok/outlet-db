@@ -19,136 +19,152 @@ $current_item = $matches[0][1];
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.28.15/js/jquery.tablesorter.min.js"></script>
     <title>Outlet DB Admin</title>
     <script>
-        $(document).on('click', 'input[type="submit"]', function (e) {
-            e.preventDefault();
-            var form = $(this).closest('form');
-            /*$.post($(form).attr('action'), $(form).serialize());*/
-            var fd = new FormData(form.get(0));
-            $(this).attr('value', 'submitting...').addClass('submitting');
-            var thiz = $(this);
-            $.ajax({
-                url: $(form).attr('action') + '&batch=true',
-                data: fd,
-                cache: false,
-                processData: false,
-                contentType: false,
-                type: $(form).attr('method').toString().toUpperCase(),
-                beforeSend: function (xhr) {
-                    xhr.setRequestHeader ("Authorization", "Basic " + btoa("api-user:StrongPassword2017"));
-                },
-                complete: function () {
-                    $(thiz).attr('value', 'done!');
-                    window.location.reload()
-                }
-            });
-        }).on('click', 'img', function () {
-            switch ($(this).attr('height')) {
-                case '100':
-                    $(this).removeAttr('height');
-                    break;
-                default:
-                    $(this).attr('height', '100');
-                    break;
-            }
-        }).on('click', 'span.edit', function () {
-            var id = $(this).data('item-id');
-            $(this).text('save').removeClass('edit').addClass('save');
-            $(this).closest('tr').children().each(function () {
-                switch ($(this).data('type')) {
-                    case 'image':
-                    case 'video':
-                        if ($(this).data('column') !== 'thumbnail') {
-                            $(this).append('<input name="' + $(this).data('column') + '" type="file">');
-                        }
+        $(document)
+            .on('click', 'input[type="submit"]', function (e) {
+                e.preventDefault();
+                var form = $(this).closest('form');
+                /*$.post($(form).attr('action'), $(form).serialize());*/
+                var fd = new FormData(form.get(0));
+                $(this).attr('value', 'submitting...').addClass('submitting');
+                var thiz = $(this);
+                $.ajax({
+                    url: $(form).attr('action') + '&batch=true',
+                    data: fd,
+                    cache: false,
+                    processData: false,
+                    contentType: false,
+                    type: $(form).attr('method').toString().toUpperCase(),
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader("Authorization", "Basic " + btoa("api-user:StrongPassword2017"));
+                    },
+                    complete: function () {
+                        $(thiz).attr('value', 'done!');
+                        window.location.reload()
+                    }
+                });
+            })
+            .on('click', 'img', function () {
+                switch ($(this).attr('height')) {
+                    case '100':
+                        $(this).removeAttr('height');
                         break;
                     default:
-                        if ($(this).data('column') !== undefined) {
-                            $(this).attr('contenteditable', 'true');
-                        }
+                        $(this).attr('height', '100');
                         break;
                 }
             })
-
-        }).on('click', 'span.save', function () {
-            var id = $(this).data('item-id');
-            var fd = new FormData();
-            $(this).closest('tr').children().each(function () {
-                switch ($(this).data('type')) {
-                    case 'image':
-                    case 'video':
-                        if ($(this).data('column') !== 'thumbnail') {
-                            var file = $(this).find('input')[0].files[0];
-                            if (file !== undefined) {
-                                fd.append($(this).data('column').toString(), file);
+            .on('click', 'span.edit', function () {
+                var id = $(this).data('item-id');
+                $(this).text('save').removeClass('edit').addClass('save');
+                $(this).closest('tr').children().each(function () {
+                    switch ($(this).data('type')) {
+                        case 'image':
+                        case 'video':
+                            if ($(this).data('column') !== 'thumbnail') {
+                                $(this).append('<input name="' + $(this).data('column') + '" type="file">');
                             }
-                            $(this).find('input').hide();
-                        }
-                        break;
-                    default:
-                        if ($(this).data('column') !== undefined) {
-                            $(this).removeAttr('contenteditable');
-                            fd.append($(this).data('column').toString(), $(this).text());
-                        }
-                        break;
-                }
-            });
-
-            $(this).text('saving...').removeClass('save').addClass('saving');
-
-            var thiz = this;
-            $.ajax({
-                url: $('form').attr('action').replace('type=add', 'type=edit') + '&id=' + id,
-                data: fd,
-                cache: false,
-                processData: false,
-                contentType: false,
-                type: 'POST',
-                beforeSend: function (xhr) {
-                    xhr.setRequestHeader ("Authorization", "Basic " + btoa("api-user:StrongPassword2017"));
-                },
-                complete: function (res) {
-                    $(thiz).text('saved!').removeClass('saving').addClass('saved');
-                    if (res.responseText.trim() === 'reload') {
-                        window.location.reload();
-                    } else if (res.responseText.trim().length > 0) {
-                        res = JSON.parse(res.responseText);
-                        if (res.length > 0) {
-                            res.forEach(function (dat) {
-                                var column = dat[0];
-                                var img = dat[1];
-                                $(thiz).closest('tr').find('td[data-column="' + column + '"]').find('img').attr('src', img);
-                            });
-                        }
+                            break;
+                        default:
+                            if ($(this).data('column') !== undefined) {
+                                $(this).attr('contenteditable', 'true');
+                            }
+                            break;
                     }
+                })
 
-                    setTimeout(function () {
-                        $(thiz).text('edit').removeClass('save').addClass('edit');
-                    }, 1000);
+            })
+            .on('click', 'span.save', function () {
+                var id = $(this).data('item-id');
+                var fd = new FormData();
+                $(this).closest('tr').children().each(function () {
+                    switch ($(this).data('type')) {
+                        case 'image':
+                        case 'video':
+                            if ($(this).data('column') !== 'thumbnail') {
+                                var file = $(this).find('input')[0].files[0];
+                                if (file !== undefined) {
+                                    fd.append($(this).data('column').toString(), file);
+                                }
+                                $(this).find('input').hide();
+                            }
+                            break;
+                        default:
+                            if ($(this).data('column') !== undefined) {
+                                $(this).removeAttr('contenteditable');
+                                fd.append($(this).data('column').toString(), $(this).text());
+                            }
+                            break;
+                    }
+                });
+
+                $(this).text('saving...').removeClass('save').addClass('saving');
+
+                var thiz = this;
+                $.ajax({
+                    url: $('form').attr('action').replace('type=add', 'type=edit') + '&id=' + id,
+                    data: fd,
+                    cache: false,
+                    processData: false,
+                    contentType: false,
+                    type: 'POST',
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader("Authorization", "Basic " + btoa("api-user:StrongPassword2017"));
+                    },
+                    complete: function (res) {
+                        $(thiz).text('saved!').removeClass('saving').addClass('saved');
+                        if (res.responseText.trim() === 'reload') {
+                            window.location.reload();
+                        } else if (res.responseText.trim().length > 0) {
+                            res = JSON.parse(res.responseText);
+                            if (res.length > 0) {
+                                res.forEach(function (dat) {
+                                    var column = dat[0];
+                                    var img = dat[1];
+                                    $(thiz).closest('tr').find('td[data-column="' + column + '"]').find('img').attr('src', img);
+                                });
+                            }
+                        }
+
+                        setTimeout(function () {
+                            $(thiz).text('edit').removeClass('save').addClass('edit');
+                        }, 1000);
+                    }
+                });
+            })
+            .on('click', 'span.delete', function () {
+                $(this).text('sure?').removeClass('delete').addClass('sure');
+            })
+            .on('click', 'span.sure', function () {
+                $(this).text('deleting...').removeClass('sure').addClass('deleting');
+                var id = $(this).data('item-id');
+                var thiz = this;
+                $.ajax({
+                    url: $('form').attr('action').replace('type=add', 'type=delete') + '&id=' + id,
+                    cache: false,
+                    processData: false,
+                    contentType: false,
+                    type: 'GET',
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader("Authorization", "Basic " + btoa("api-user:StrongPassword2017"));
+                    },
+                    complete: function () {
+                        $(thiz).text('deleted!').removeClass('deleting').addClass('deleted');
+                        setTimeout(function () {
+                            $(thiz).closest('tr').hide();
+                        }, 1000);
+                    }
+                });
+            })
+            .on('change', 'select#limit', function () {
+                var select = $('#limit');
+                var current = $(select).find("option[selected]").val();
+                var selected = $(select).find(":selected").val();
+                if (current === undefined || current === 'none' || current === '0') {
+                    window.location += '?limit=' + selected;
+                } else if (current !== selected) {
+                    window.location = window.location.href.replace('limit=' + current, 'limit=' + selected);
                 }
             });
-        }).on('click', 'span.delete', function () {
-            $(this).text('sure?').removeClass('delete').addClass('sure');
-        }).on('click', 'span.sure', function () {
-            $(this).text('deleting...').removeClass('sure').addClass('deleting');
-            var id = $(this).data('item-id');
-            var thiz = this;
-            $.ajax({
-                url: $('form').attr('action').replace('type=add', 'type=delete') + '&id=' + id,
-                cache: false,
-                processData: false,
-                contentType: false,
-                type: 'GET',
-                beforeSend: function (xhr) {
-                    xhr.setRequestHeader ("Authorization", "Basic " + btoa("api-user:StrongPassword2017"));
-                },
-                complete: function () {
-                    $(thiz).text('deleted!').removeClass('deleting').addClass('deleted');
-                    setTimeout(function () {
-                        $(thiz).closest('tr').hide();
-                    }, 1000);
-                }
-            });
-        });
         $(document).ready(function () {
                 $('.tablesorter').tablesorter();
             }
@@ -207,6 +223,12 @@ $current_item = $matches[0][1];
             display: block;
             margin-bottom: 1em;
             width: 50%;
+        }
+
+        label[for='limit'],
+        label[for='limit'] + input {
+            display: inline-block;
+            margin-right: 1em;
         }
 
         input[type='submit'] {
@@ -269,6 +291,18 @@ $current_item = $matches[0][1];
 
         .tablesorter th {
             cursor: pointer;
+        }
+
+        table.limit5 tr:nth-child(n+5) {
+            display: none;
+        }
+
+        table.limit10 tr:nth-child(n+10) {
+            display: none;
+        }
+
+        table.limit20 tr:nth-child(n+20) {
+            display: none;
         }
     </style>
 </head>
@@ -368,7 +402,15 @@ $current_item = $matches[0][1];
             echo "<input type='submit' value='submit'>" . PHP_EOL;
             echo "</form>" . PHP_EOL;
             echo "<h1>List of $current_item items:</h1>" . PHP_EOL;
-            echo "<table border='1' cellpadding='5' class='tablesorter'>" . PHP_EOL;
+            echo "<label for='limit'>Rows limit:</label>";
+            echo "<select name='limit' id='limit'>" . PHP_EOL;
+            echo "<option " . (!(!isset($_GET['limit']) || 'none' === $_GET['limit']) ?: 'selected') . " value='0'>none</option>";
+            $limits = [5, 10, 20, 50, 100];
+            foreach ($limits as $limit) {
+                echo "<option " . (!(isset($_GET['limit']) && $limit === intval($_GET['limit'])) ?: 'selected') . " value='$limit'>$limit</option>";
+            }
+            echo "</select>" . PHP_EOL;
+            echo "<table border='1' cellpadding='5' class='tablesorter " . (!isset($_GET['limit']) ?: "limit{$_GET['limit']}") . "'>" . PHP_EOL;
             echo "<thead>" . PHP_EOL;
             echo "<tr>" . PHP_EOL;
             echo "<th></th>" . PHP_EOL;
