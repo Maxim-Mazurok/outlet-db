@@ -181,7 +181,7 @@ switch ($_GET['type']) {
 
                 if ($fields_not_empty) {
                     if ($batch) {
-                        $r = pg_query($db, "SELECT MAX(CAST(RIGHT(product_id, 4) AS INTEGER)) as prod_id FROM {$_GET['table']} WHERE product_id LIKE '{$_POST['product_id']}_%';");
+                        $r = pg_query($db, "SELECT MAX(CAST(RIGHT(product_id, 4) AS INTEGER)) as prod_id FROM {$_GET['table']} WHERE product_id LIKE '{$_POST['product_id']}%';");
                         $res = pg_fetch_assoc($r);
                         $prod_id = intval($res['prod_id']) + 1;
 
@@ -192,7 +192,7 @@ switch ($_GET['type']) {
 
                         $i = 0;
                         foreach ($upload_array as $sql_field) {
-                            $sql_fields['product_id'] = $product_id_prefix . '_' . str_pad(strval($prod_id), 4, '0', STR_PAD_LEFT);
+                            $sql_fields['product_id'] = $product_id_prefix . str_pad(strval($prod_id), 4, '0', STR_PAD_LEFT);
                             $sql_fields['download_image'] = $sql_field;
                             $sql_fields['thumbnail'] = $upload_array_thumb[$i];
                             $prod_id++;
@@ -282,11 +282,11 @@ switch ($_GET['type']) {
 
                 if ($fields_not_empty) {
                     if ($batch) {
-                        $r = pg_query($db, "SELECT MAX(CAST(RIGHT(product_id, 4) AS INTEGER)) as prod_id FROM {$_GET['table']} WHERE product_id LIKE '{$_POST['product_id']}_%';");
+                        $r = pg_query($db, "SELECT MAX(CAST(RIGHT(product_id, 4) AS INTEGER)) as prod_id FROM {$_GET['table']} WHERE product_id LIKE '{$_POST['product_id']}%';");
                         $res = pg_fetch_assoc($r);
                         $prod_id = intval($res['prod_id']) + 1;
 
-                        $sql_fields['product_id'] = $product_id_prefix . '_' . str_pad(strval($prod_id), 4, '0', STR_PAD_LEFT);
+                        $sql_fields['product_id'] = $product_id_prefix . str_pad(strval($prod_id), 4, '0', STR_PAD_LEFT);
 
                         $query = "INSERT INTO {$_GET['table']} VALUES ('" . join("','", $sql_fields) . "')";
                         pg_query($db, $query);
@@ -428,7 +428,7 @@ switch ($_GET['type']) {
 
                 if ($fields_not_empty) {
                     if ($batch) {
-                        $r = pg_query($db, "SELECT MAX(CAST(RIGHT(product_id, 4) AS INTEGER)) as prod_id FROM {$_GET['table']} WHERE product_id LIKE '{$_POST['product_id']}_%';");
+                        $r = pg_query($db, "SELECT MAX(CAST(RIGHT(product_id, 4) AS INTEGER)) as prod_id FROM {$_GET['table']} WHERE product_id LIKE '{$_POST['product_id']}%';");
                         $res = pg_fetch_assoc($r);
                         $prod_id = intval($res['prod_id']) + 1;
 
@@ -443,7 +443,7 @@ switch ($_GET['type']) {
 
                         $i = 0;
                         foreach ($upload_array as $sql_field) {
-                            $sql_fields['product_id'] = $product_id_prefix . '_' . str_pad(strval($prod_id), 4, '0', STR_PAD_LEFT);
+                            $sql_fields['product_id'] = $product_id_prefix . str_pad(strval($prod_id), 4, '0', STR_PAD_LEFT);
                             $sql_fields['video'] = $sql_field;
                             $sql_fields['thumbnail'] = $upload_array_thumb[$i];
                             $sql_fields['size'] = $upload_array_size[$i];
