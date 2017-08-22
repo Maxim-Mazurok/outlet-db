@@ -369,7 +369,6 @@ $current_item = $matches[0][1];
                     case 'length':
                     case 'size':
                         break;
-                    case 'model_number':
                     case 'price_gbp':
                     case 'price_usd':
                     case 'price_eur':
