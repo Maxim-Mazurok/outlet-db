@@ -370,6 +370,7 @@ $current_item = $matches[0][1];
                     case 'video_button':
                     case 'subscription_button':
                     case 'image_button':
+                    case 'icon_color':
                     case 'thumbnail_grey':
                     case 'subscription_image':
                         echo "<label for='$column'>$column:</label>" . PHP_EOL;
@@ -431,6 +432,7 @@ $current_item = $matches[0][1];
                         case 'image_button':
                         case 'thumbnail':
                         case 'download_image':
+                        case 'icon_color':
                         case 'thumbnail_grey':
                         case 'subscription_image':
                             echo "<td data-type='image' data-column='{$column}'><a data-fancybox='gallery' href='{$datum->$column}'><img title='click to view full size image' height='100' src='{$datum->$column}'></a></td>" . PHP_EOL;

@@ -212,7 +212,7 @@ switch ($_GET['type']) {
                 $post_fields = array(
                     'name',
                     'url',
-                    'icon_color',
+                    '(upl)icon_color',
                     '(upl)thumbnail_grey'
                 );
 
@@ -569,7 +569,7 @@ switch ($_GET['type']) {
                     $post_fields = array(
                         'name',
                         'url',
-                        'icon_color',
+                        '(upl)icon_color',
                         '(upl)thumbnail_grey'
                     );
 
