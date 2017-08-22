@@ -16,6 +16,7 @@ $current_item = $matches[0][1];
           rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.28.15/js/jquery.tablesorter.min.js"></script>
     <title>Outlet DB Admin</title>
     <script>
         $(document).on('click', 'input[type="submit"]', function (e) {
@@ -148,6 +149,10 @@ $current_item = $matches[0][1];
                 }
             });
         });
+        $(document).ready(function () {
+                $('.tablesorter').tablesorter();
+            }
+        );
     </script>
     <style>
         body {
@@ -261,6 +266,10 @@ $current_item = $matches[0][1];
             font-weight: bold;
             color: #fff;
         }
+
+        .tablesorter th {
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -359,7 +368,7 @@ $current_item = $matches[0][1];
             echo "<input type='submit' value='submit'>" . PHP_EOL;
             echo "</form>" . PHP_EOL;
             echo "<h1>List of $current_item items:</h1>" . PHP_EOL;
-            echo "<table border='1' cellpadding='5'>" . PHP_EOL;
+            echo "<table border='1' cellpadding='5' class='tablesorter'>" . PHP_EOL;
             echo "<thead>" . PHP_EOL;
             echo "<tr>" . PHP_EOL;
             echo "<th></th>" . PHP_EOL;
