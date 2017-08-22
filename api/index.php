@@ -49,7 +49,7 @@ switch ($_GET['type']) {
             case 'social_networks':
             case 'subscriptions_menu':
             case 'videos_menu':
-                $r = pg_query($db, "SELECT * FROM {$_GET['table']} ORDER BY id DESC");
+                $r = pg_query($db, "SELECT * FROM {$_GET['table']} ORDER BY id ASC");
                 echo json_encode(pg_num_rows($r) > 0 ? pg_fetch_all($r) : []);
                 break;
             default:
