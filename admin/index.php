@@ -432,9 +432,6 @@ $current_item = $matches[0][1];
                     case 'icon_color':
                     case 'thumbnail_grey':
                     case 'subscription_image':
-                        echo "<label for='$column'>$column:</label>" . PHP_EOL;
-                        echo "<input name='{$column}' id='$column' type='file'>" . PHP_EOL;
-                        break;
                     case 'video':
                     case 'download_image':
                         echo "<label for='$column'>$column:</label>" . PHP_EOL;
