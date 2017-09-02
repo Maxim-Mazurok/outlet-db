@@ -19,6 +19,7 @@ $current_item = $matches[0][1];
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.28.15/js/jquery.tablesorter.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.1.20/jquery.fancybox.min.js"></script>
+    <script src="../res/jQuery-Autocomplete-1.4.2/dist/jquery.autocomplete.min.js"></script>
     <title>Outlet DB Admin</title>
     <script>
         $(document)
@@ -163,6 +164,27 @@ $current_item = $matches[0][1];
         );
     </script>
     <style>
+        .autocomplete-suggestions {
+            overflow: auto;
+            border: 1px solid #CBD3DD;
+            background: #FFF;
+        }
+
+        .autocomplete-suggestion {
+            overflow: hidden;
+            padding: 5px 15px;
+            white-space: nowrap;
+        }
+
+        .autocomplete-selected {
+            background: #F0F0F0;
+        }
+
+        .autocomplete-suggestions strong {
+            color: #029cca;
+            font-weight: normal;
+        }
+
         body {
             font-family: 'Open Sans', sans-serif;
         }
@@ -352,8 +374,45 @@ $current_item = $matches[0][1];
             $json = file_get_contents($url, false, $context);
             $data = json_decode($json);
             $columns = array_keys((array)$data[0]);
+
+            $suggestions = [];
+
+            foreach ($columns as $column) {
+                if ($current_item === 'editions') {
+                    $suggestions['edition_name']['lookup'] = [];
+                    foreach ($data as $datum) {
+                        array_push($suggestions['edition_name']['lookup'], ['value' => $datum->name]);
+                    }
+                } else {
+                    $suggestions[$column]['lookup'] = [];
+                    foreach ($data as $datum) {
+                        if (in_array(['value' => $datum->$column], $suggestions[$column]['lookup']) === false) {
+                            array_push($suggestions[$column]['lookup'], ['value' => $datum->$column]);
+                        }
+                    }
+                }
+            }
+
+            foreach ($suggestions as $suggestion_name => $values) {
+                if ($current_item === 'editions' && ($suggestion_name === 'name' || $suggestion_name === 'edition_name')) {
+                    echo "<script>
+                    $(document).ready(function () {
+                        if ($('input[name=edition_name]').length > 0 || $('input[type=text]').length === 1) {
+                            $('input[name=edition_name], input[name=name]').autocomplete(" . json_encode($values) . ");
+                        }
+                    });
+                    </script>";
+                } else {
+                    echo "<script>
+                    $(document).ready(function () {
+                        $('input[name=$suggestion_name]').autocomplete(" . json_encode($values) . ");
+                    });
+                    </script>";
+                }
+            }
+
             echo "<h1>Add new $current_item item:</h1>" . PHP_EOL;
-            echo "<form method='post' action='/api/?type=add&table=$current_item'>" . PHP_EOL;
+            echo "<form autocomplete='off' method='post' action='/api/?type=add&table=$current_item'>" . PHP_EOL;
             foreach ($columns as $column) {
                 switch ($column) {
                     case 'id':
@@ -387,7 +446,7 @@ $current_item = $matches[0][1];
                         break;
                     default:
                         echo "<label for='$column'>$column:</label>" . PHP_EOL;
-                        echo "<input name='$column' id='$column'>" . PHP_EOL;
+                        echo "<input type='text' autocomplete='off' name='$column' id='$column'>" . PHP_EOL;
                         break;
                 }
             }
