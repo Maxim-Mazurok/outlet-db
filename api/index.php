@@ -23,18 +23,26 @@ $s3 = Aws\S3\S3Client::factory([
 ]);
 $bucket = getenv('S3_BUCKET_NAME') ?: die('No "S3_BUCKET" config var in found in env!');
 
-function not_empty_get(array $items) {
+function not_empty_get(array $items)
+{
     foreach ($items as $item) {
-        if (!array_key_exists($item, $_GET)) return false;
-        if (empty($_GET[$item])) return false;
+        if (!array_key_exists($item, $_GET)) {
+            return false;
+        }
+        if (empty($_GET[$item])) {
+            return false;
+        }
     }
+
     return true;
 }
 
-function thumbnailImage($imagePath) {
+function thumbnailImage($imagePath)
+{
     $imagick = new \Imagick(realpath($imagePath));
     $imagick->setbackgroundcolor('rgb(64, 64, 64)');
     $imagick->thumbnailImage(100, 100, true, true);
+
     return $imagick->getImageBlob();
 }
 
@@ -87,7 +95,9 @@ switch ($_GET['type']) {
                 foreach ($post_fields as $field) {
                     if (substr($field, 0, strlen('(upl)')) === '(upl)') {
                         $field = substr($field, strlen('(upl)'));
-                        if (empty($_FILES[$field])) $fields_not_empty = false;
+                        if (empty($_FILES[$field])) {
+                            $fields_not_empty = false;
+                        }
                         $upload = $s3->upload($bucket, $_FILES[$field]['name'], fopen($_FILES[$field]['tmp_name'], 'rb'), 'public-read');
                         array_push($sql_fields, $upload->get('ObjectURL'));
                     } else {
@@ -118,16 +128,16 @@ switch ($_GET['type']) {
                 );
 
                 $sql_fields = array(
-                    'edition_name' => NULL,
-                    'model_number' => NULL,
-                    'model_name' => NULL,
-                    'shoot_name' => NULL,
-                    'thumbnail' => NULL,
-                    'download_image' => NULL,
-                    'product_id' => NULL,
-                    'price_gbp' => NULL,
-                    'price_usd' => NULL,
-                    'price_eur' => NULL
+                    'edition_name' => null,
+                    'model_number' => null,
+                    'model_name' => null,
+                    'shoot_name' => null,
+                    'thumbnail' => null,
+                    'download_image' => null,
+                    'product_id' => null,
+                    'price_gbp' => null,
+                    'price_usd' => null,
+                    'price_eur' => null
                 );
 
                 $batch = array_key_exists('batch', $_GET) && $_GET['batch'] === 'true';
@@ -143,7 +153,9 @@ switch ($_GET['type']) {
                             if ($batch) {
                                 for ($i = 0; $i < count($_FILES[$field]['name']); $i++) {
                                     $upload = $s3->upload($bucket, $_FILES[$field]['name'][$i], fopen($_FILES[$field]['tmp_name'][$i], 'rb'), 'public-read');
-                                    if (!array_key_exists('upload', $sql_fields)) $sql_fields['upload'] = [];
+                                    if (!array_key_exists('upload', $sql_fields)) {
+                                        $sql_fields['upload'] = [];
+                                    }
                                     array_push($sql_fields['upload'], $upload->get('ObjectURL'));
                                 }
                             } else {
@@ -160,7 +172,9 @@ switch ($_GET['type']) {
                                 for ($i = 0; $i < count($_FILES['download_image']['name']); $i++) {
                                     $data = thumbnailImage($_FILES['download_image']['tmp_name'][$i]);
                                     $upload = $s3->upload($bucket, "{$_FILES['download_image']['name'][$i]}_thumbnail", $data, 'public-read');
-                                    if (!array_key_exists('upload_thumbnail', $sql_fields)) $sql_fields['upload_thumbnail'] = [];
+                                    if (!array_key_exists('upload_thumbnail', $sql_fields)) {
+                                        $sql_fields['upload_thumbnail'] = [];
+                                    }
                                     array_push($sql_fields['upload_thumbnail'], $upload->get('ObjectURL'));
                                 }
                             } else {
@@ -172,7 +186,9 @@ switch ($_GET['type']) {
                     } elseif ($batch && $field === 'product_id') {
                         $product_id_prefix = $_POST[$field];
                     } else {
-                        if (empty($_POST[$field])) $fields_not_empty = false;
+                        if (empty($_POST[$field])) {
+                            $fields_not_empty = false;
+                        }
                         $sql_fields[$field] = $_POST[$field];
                     }
                 }
@@ -220,11 +236,15 @@ switch ($_GET['type']) {
                 foreach ($post_fields as $field) {
                     if (substr($field, 0, 5) === '(upl)') {
                         $field = substr($field, 5);
-                        if (empty($_FILES[$field])) $fields_not_empty = false;
+                        if (empty($_FILES[$field])) {
+                            $fields_not_empty = false;
+                        }
                         $upload = $s3->upload($bucket, $_FILES[$field]['name'], fopen($_FILES[$field]['tmp_name'], 'rb'), 'public-read');
                         array_push($sql_fields, $upload->get('ObjectURL'));
                     } else {
-                        if (empty($_POST[$field])) $fields_not_empty = false;
+                        if (empty($_POST[$field])) {
+                            $fields_not_empty = false;
+                        }
                         array_push($sql_fields, $_POST[$field]);
                     }
                 }
@@ -246,13 +266,13 @@ switch ($_GET['type']) {
                 );
 
                 $sql_fields = array(
-                    'edition_name' => NULL,
-                    'model_number' => NULL,
-                    'model_name' => NULL,
-                    'shoot_name' => NULL,
-                    'thumbnail' => NULL,
-                    'subscription_image' => NULL,
-                    'product_id' => NULL
+                    'edition_name' => null,
+                    'model_number' => null,
+                    'model_name' => null,
+                    'shoot_name' => null,
+                    'thumbnail' => null,
+                    'subscription_image' => null,
+                    'product_id' => null
                 );
 
                 $batch = array_key_exists('batch', $_GET) && $_GET['batch'] === 'true';
@@ -268,7 +288,9 @@ switch ($_GET['type']) {
                             if ($batch) {
                                 for ($i = 0; $i < count($_FILES[$field]['name']); $i++) {
                                     $upload = $s3->upload($bucket, $_FILES[$field]['name'][$i], fopen($_FILES[$field]['tmp_name'][$i], 'rb'), 'public-read');
-                                    if (!array_key_exists('upload', $sql_fields)) $sql_fields['upload'] = [];
+                                    if (!array_key_exists('upload', $sql_fields)) {
+                                        $sql_fields['upload'] = [];
+                                    }
                                     array_push($sql_fields['upload'], $upload->get('ObjectURL'));
                                 }
                             } else {
@@ -285,7 +307,9 @@ switch ($_GET['type']) {
                                 for ($i = 0; $i < count($_FILES['subscription_image']['name']); $i++) {
                                     $data = thumbnailImage($_FILES['subscription_image']['tmp_name'][$i]);
                                     $upload = $s3->upload($bucket, "{$_FILES['subscription_image']['name'][$i]}_thumbnail", $data, 'public-read');
-                                    if (!array_key_exists('upload_thumbnail', $sql_fields)) $sql_fields['upload_thumbnail'] = [];
+                                    if (!array_key_exists('upload_thumbnail', $sql_fields)) {
+                                        $sql_fields['upload_thumbnail'] = [];
+                                    }
                                     array_push($sql_fields['upload_thumbnail'], $upload->get('ObjectURL'));
                                 }
                             } else {
@@ -297,7 +321,9 @@ switch ($_GET['type']) {
                     } elseif ($batch && $field === 'product_id') {
                         $product_id_prefix = $_POST[$field];
                     } else {
-                        if (empty($_POST[$field])) $fields_not_empty = false;
+                        if (empty($_POST[$field])) {
+                            $fields_not_empty = false;
+                        }
                         $sql_fields[$field] = $_POST[$field];
                     }
                 }
@@ -343,33 +369,83 @@ switch ($_GET['type']) {
                     'price_gbp',
                     'price_usd',
                     'price_eur',
-                    '(gen)thumbnail',
+                    '(upl)thumbnail',
                     '(upl)video',
                     'product_id'
                 );
 
                 $sql_fields = array(
-                    'edition_name' => NULL,
-                    'model_number' => NULL,
-                    'model_name' => NULL,
-                    'shoot_name' => NULL,
-                    'video_title' => NULL,
-                    'length' => NULL,
-                    'size' => NULL,
-                    'price_gbp' => NULL,
-                    'price_usd' => NULL,
-                    'price_eur' => NULL,
-                    'thumbnail' => NULL,
-                    'video' => NULL,
-                    'product_id' => NULL
+                    'edition_name' => null,
+                    'model_number' => null,
+                    'model_name' => null,
+                    'shoot_name' => null,
+                    'video_title' => null,
+                    'length' => null,
+                    'size' => null,
+                    'price_gbp' => null,
+                    'price_usd' => null,
+                    'price_eur' => null,
+                    'thumbnail' => null,
+                    'video' => null,
+                    'product_id' => null
                 );
 
-                $batch = array_key_exists('batch', $_GET) && $_GET['batch'] === 'true';
-                $product_id_prefix = 'NULL';
+                //$batch = array_key_exists('batch', $_GET) && $_GET['batch'] === 'true';
 
-                $fields_not_empty = true;
-                foreach ($post_fields as $field) {
-                    error_log('MAXTEST: ' . $field . PHP_EOL);
+                $product_id_prefix = $_POST['product_id'];
+                $r = pg_query($db, "SELECT MAX(CAST(RIGHT(product_id, 4) AS INTEGER)) as prod_id FROM {$_GET['table']} WHERE product_id LIKE '{$_POST['product_id']}%';");
+                $res = pg_fetch_assoc($r);
+                $prod_id = intval($res['prod_id']) + 1;
+
+                $edition_name = $_POST['edition_name'];
+                $model_number = $_POST['model_number'];
+                $model_name = $_POST['model_name'];
+                $shoot_name = $_POST['shoot_name'];
+                $video_title = $_POST['video_title'];
+
+                $price_gbp = $_POST['price_gbp'];
+                $price_usd = $_POST['price_usd'];
+                $price_eur = $_POST['price_eur'];
+
+                $upload_array = [];
+                for ($i = 0; $i < count($_FILES['thumbnail']['name']); $i++) {
+                    $upload_thumbnail = $s3->upload($bucket, $_FILES['thumbnail']['name'][$i], fopen($_FILES['thumbnail']['tmp_name'][$i], 'rb'), 'public-read');
+                    $upload_video = $s3->upload($bucket, $_FILES['video']['name'][$i], fopen($_FILES['video']['tmp_name'][$i], 'rb'), 'public-read');
+                    $ffprobe = FFMpeg\FFProbe::create();
+                    $duration = $ffprobe->format($_FILES['video']['tmp_name'][$i])->get('duration');
+                    $upload_array[$i] = [
+                        'thumbnail' => $upload_thumbnail->get('ObjectURL'),
+                        'video' => $upload_video->get('ObjectURL'),
+                        'product_id' => "{$product_id_prefix} {$prod_id}",
+                        'length' => intval($duration),
+                        'size' => $_FILES['video']['size'][$i]
+                    ];
+                    $prod_id++;
+                }
+
+                foreach ($upload_array as $item) {
+                    $query = "
+INSERT INTO {$_GET['table']} VALUES (
+  '{$edition_name}',
+  '{$model_number}',
+  '{$model_name}',
+  '{$shoot_name}',
+  '{$video_title}',
+  '{$item['length']}',
+  '{$item['size']}',
+  '{$price_gbp}',
+  '{$price_usd}',
+  '{$price_eur}',
+  '{$item['thumbnail']}',
+  '{$item['video']}',
+  '{$item['product_id']}'
+)";
+                    pg_query($db, $query);
+                }
+
+
+                /*$fields_not_empty = true;*/
+                /*foreach ($post_fields as $field) {
                     if (substr($field, 0, strlen('(upl)')) === '(upl)') {
                         $field = substr($field, strlen('(upl)'));
                         if (empty($_FILES[$field])) {
@@ -378,8 +454,8 @@ switch ($_GET['type']) {
                             if ($batch) {
                                 for ($i = 0; $i < count($_FILES[$field]['name']); $i++) {
                                     $upload = $s3->upload($bucket, $_FILES[$field]['name'][$i], fopen($_FILES[$field]['tmp_name'][$i], 'rb'), 'public-read');
-                                    if (!array_key_exists('upload', $sql_fields)) $sql_fields['upload'] = [];
-                                    array_push($sql_fields['upload'], $upload->get('ObjectURL'));
+                                    if (!array_key_exists("upload_$field", $sql_fields)) $sql_fields["upload_$field"] = [];
+                                    array_push($sql_fields["upload_$field"], $upload->get('ObjectURL'));
                                 }
                             } else {
                                 $upload = $s3->upload($bucket, $_FILES[$field]['name'], fopen($_FILES[$field]['tmp_name'], 'rb'), 'public-read');
@@ -458,20 +534,20 @@ switch ($_GET['type']) {
                         if (empty($_POST[$field])) $fields_not_empty = false;
                         $sql_fields[$field] = $_POST[$field];
                     }
-                }
+                }*/
 
-                if ($fields_not_empty) {
+                /*if ($fields_not_empty) {
                     if ($batch) {
                         $r = pg_query($db, "SELECT MAX(CAST(RIGHT(product_id, 4) AS INTEGER)) as prod_id FROM {$_GET['table']} WHERE product_id LIKE '{$_POST['product_id']}%';");
                         $res = pg_fetch_assoc($r);
                         $prod_id = intval($res['prod_id']) + 1;
 
-                        $upload_array = $sql_fields['upload'];
-                        $upload_array_thumb = $sql_fields['video_thumbnail'];
+                        $upload_array = $sql_fields['upload_video'];
+                        $upload_array_thumb = $sql_fields['thumbnail'];
                         $upload_array_size = $sql_fields['video_size'];
                         $upload_array_len = $sql_fields['video_len'];
-                        unset($sql_fields['upload']);
-                        unset($sql_fields['video_thumbnail']);
+                        unset($sql_fields['upload_video']);
+                        unset($sql_fields['thumbnail']);
                         unset($sql_fields['video_size']);
                         unset($sql_fields['video_len']);
 
@@ -493,7 +569,7 @@ switch ($_GET['type']) {
                         $query = "INSERT INTO {$_GET['table']} VALUES ('" . join("','", $sql_fields) . "')";
                         pg_query($db, $query);
                     }
-                }
+                }*/
                 break;
             default:
                 die(404);
@@ -587,7 +663,9 @@ switch ($_GET['type']) {
                                 array_push($images, array($field, $upload->get('ObjectURL')));
                             }
                         } else {
-                            if (empty($_POST[$field])) $fields_not_empty = false;
+                            if (empty($_POST[$field])) {
+                                $fields_not_empty = false;
+                            }
                             $sql_fields[$field] = "{$field}='{$_POST[$field]}'";
                         }
                     }
@@ -665,7 +743,9 @@ switch ($_GET['type']) {
                                 array_push($sql_fields, "{$field}='{$upload->get('ObjectURL')}'");
                             }
                         } else {
-                            if (empty($_POST[$field])) $fields_not_empty = false;
+                            if (empty($_POST[$field])) {
+                                $fields_not_empty = false;
+                            }
                             array_push($sql_fields, "{$field}='{$_POST[$field]}'");
                         }
                     }
@@ -689,7 +769,7 @@ switch ($_GET['type']) {
                         'price_gbp',
                         'price_usd',
                         'price_eur',
-                        '(gen)thumbnail',
+                        '(upl)thumbnail',
                         '(upl)video',
                         'product_id'
                     );
@@ -698,21 +778,23 @@ switch ($_GET['type']) {
 
                     foreach ($post_fields as $field) {
                         if (substr($field, 0, strlen('(upl)')) === '(upl)') {
-                            if (count($_FILES) > 0) {
-                                $field = substr($field, strlen('(upl)'));
-                                if (empty($_FILES[$field])) $fields_not_empty = false;
+                            $field = substr($field, strlen('(upl)'));
+                            if (count($_FILES[$field]) > 0) {
+                                if (empty($_FILES[$field])) {
+                                    $fields_not_empty = false;
+                                }
                                 $upload = $s3->upload($bucket, $_FILES[$field]['name'], fopen($_FILES[$field]['tmp_name'], 'rb'), 'public-read');
                                 array_push($sql_fields, "{$field}='{$upload->get('ObjectURL')}'");
                             }
                         } elseif (substr($field, 0, strlen('(len)')) === '(len)') {
-                            if (count($_FILES) > 0) {
+                            if (count($_FILES['video']) > 0) {
                                 $field = substr($field, strlen('(len)'));
                                 $ffprobe = FFMpeg\FFProbe::create();
                                 $duration = $ffprobe->format($_FILES['video']['tmp_name'])->get('duration');
                                 array_push($sql_fields, "{$field}='" . intval($duration) . "'");
                             }
                         } elseif (substr($field, 0, strlen('(size)')) === '(size)') {
-                            if (count($_FILES) > 0) {
+                            if (count($_FILES['video']) > 0) {
                                 $field = substr($field, strlen('(size)'));
                                 $size = $_FILES['video']['size'];
                                 array_push($sql_fields, "{$field}='{$size}'");

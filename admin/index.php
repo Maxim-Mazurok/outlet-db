@@ -53,9 +53,7 @@ $current_item = $matches[0][1];
                     switch ($(this).data('type')) {
                         case 'image':
                         case 'video':
-                            if ($(this).data('column') !== 'thumbnail') {
-                                $(this).append('<input name="' + $(this).data('column') + '" type="file">');
-                            }
+                            $(this).append('<input name="' + $(this).data('column') + '" type="file">');
                             break;
                         default:
                             if ($(this).data('column') !== undefined) {
@@ -73,7 +71,7 @@ $current_item = $matches[0][1];
                     switch ($(this).data('type')) {
                         case 'image':
                         case 'video':
-                            if ($(this).data('column') !== 'thumbnail') {
+                            if ($(this).data('column') !== 'thumbnail' || $(this).data('column') === 'thumbnail' && document.location.href.indexOf('videos_menu') !== -1) {
                                 var file = $(this).find('input')[0].files[0];
                                 if (file !== undefined) {
                                     fd.append($(this).data('column').toString(), file);
@@ -442,8 +440,13 @@ $current_item = $matches[0][1];
                         echo "<input name='$column' id='$column'>" . PHP_EOL;
                         break;
                     default:
-                        echo "<label for='$column'>$column:</label>" . PHP_EOL;
-                        echo "<input type='text' autocomplete='off' name='$column' id='$column'>" . PHP_EOL;
+                        if ($column === 'thumbnail' && $current_item === 'videos_menu') {
+                            echo "<label for='$column'>$column:</label>" . PHP_EOL;
+                            echo "<input multiple name='{$column}[]' id='$column' type='file'>" . PHP_EOL;
+                        } else {
+                            echo "<label for='$column'>$column:</label>" . PHP_EOL;
+                            echo "<input type='text' autocomplete='off' name='$column' id='$column'>" . PHP_EOL;
+                        }
                         break;
                 }
             }
