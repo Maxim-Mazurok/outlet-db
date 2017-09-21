@@ -414,7 +414,6 @@ $current_item = $matches[0][1];
             foreach ($columns as $column) {
                 switch ($column) {
                     case 'id':
-                    case 'thumbnail':
                     case 'length':
                     case 'size':
                         break;
@@ -443,6 +442,8 @@ $current_item = $matches[0][1];
                         if ($column === 'thumbnail' && $current_item === 'videos_menu') {
                             echo "<label for='$column'>$column:</label>" . PHP_EOL;
                             echo "<input multiple name='{$column}[]' id='$column' type='file'>" . PHP_EOL;
+                        } elseif ($column === 'thumbnail') {
+
                         } else {
                             echo "<label for='$column'>$column:</label>" . PHP_EOL;
                             echo "<input type='text' autocomplete='off' name='$column' id='$column'>" . PHP_EOL;
