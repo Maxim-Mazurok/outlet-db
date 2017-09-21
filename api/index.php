@@ -418,7 +418,7 @@ switch ($_GET['type']) {
                         'video' => $upload_video->get('ObjectURL'),
                         'product_id' => "{$product_id_prefix} {$prod_id}",
                         'length' => intval($duration),
-                        'size' => $_FILES['video']['size'][$i]
+                        'size' => intval($_FILES['video']['size'][$i]/1024/1024)
                     ];
                     $prod_id++;
                 }
@@ -796,7 +796,7 @@ INSERT INTO {$_GET['table']} VALUES (
                         } elseif (substr($field, 0, strlen('(size)')) === '(size)') {
                             if (count($_FILES['video']) > 0) {
                                 $field = substr($field, strlen('(size)'));
-                                $size = $_FILES['video']['size'];
+                                $size = intval($_FILES['video']['size'] / 1024 / 1024);
                                 array_push($sql_fields, "{$field}='{$size}'");
                             }
                         } elseif (substr($field, 0, strlen('(gen)')) === '(gen)') {
