@@ -417,8 +417,8 @@ switch ($_GET['type']) {
                         'thumbnail' => $upload_thumbnail->get('ObjectURL'),
                         'video' => $upload_video->get('ObjectURL'),
                         'product_id' => "{$product_id_prefix} {$prod_id}",
-                        'length' => intval($duration),
-                        'size' => intval($_FILES['video']['size'][$i]/1024/1024)
+                        'length' => intval($duration / 60),
+                        'size' => intval($_FILES['video']['size'][$i] / 1024 / 1024)
                     ];
                     $prod_id++;
                 }
@@ -791,7 +791,7 @@ INSERT INTO {$_GET['table']} VALUES (
                                 $field = substr($field, strlen('(len)'));
                                 $ffprobe = FFMpeg\FFProbe::create();
                                 $duration = $ffprobe->format($_FILES['video']['tmp_name'])->get('duration');
-                                array_push($sql_fields, "{$field}='" . intval($duration) . "'");
+                                array_push($sql_fields, "{$field}='" . intval($duration / 60) . "'");
                             }
                         } elseif (substr($field, 0, strlen('(size)')) === '(size)') {
                             if (count($_FILES['video']) > 0) {
