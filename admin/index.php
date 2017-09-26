@@ -141,7 +141,7 @@ $current_item = $matches[0][1];
                     complete: function () {
                         $(thiz).text('deleted!').removeClass('deleting').addClass('deleted');
                         setTimeout(function () {
-                            $(thiz).closest('tr').hide();
+                            $(thiz).closest('tr').remove();
                         }, 1000);
                     }
                 });
@@ -150,16 +150,79 @@ $current_item = $matches[0][1];
                 var select = $('#limit');
                 var current = $(select).find("option[selected]").val();
                 var selected = $(select).find(":selected").val();
-                if (current === undefined || current === 'none' || current === '0') {
+                if (window.location.href.indexOf('limit=') === -1) {
                     window.location += '?limit=' + selected;
                 } else if (current !== selected) {
-                    window.location = window.location.href.replace('limit=' + current, 'limit=' + selected);
+                    window.location = window.location.href.replace(/limit=\d+/, 'limit=' + selected);
+                }
+            })
+            .on('click', 'div.paging button', function () {
+                var val = $(this).text();
+                var current = $('div.paging').data('current-page');
+                current = parseInt(current);
+                if (current > 0 === false) current = 1;
+                var next = 0;
+                if (val === '<' || val === '>') {
+                    if (val === '<' && current !== 1) {
+                        next = current - 1;
+                    } else if (val === '>' && current !== ($('div.paging button').length - 2)) {
+                        next = current + 1;
+                    }
+                } else {
+                    next = parseInt(val);
+                }
+                
+                if (next !== 0) {
+                    var classes = $('table').attr('class');
+                    classes = classes.replace(/limit\d+/, '');
+                    $('table').attr('class', classes);
+                    $('div.paging').data('current-page', next);
+
+                    $('table tbody tr').each(function (i, row) {
+                        var cur_item = i;
+                        var selected_limit = $('#limit').find(":selected").val();
+                        var from_item = selected_limit * (next - 1);
+                        var to_item = selected_limit * next;
+                        if (cur_item < from_item || cur_item >= to_item) {
+                            $(row).hide();
+                        } else {
+                            $(row).show();
+                        }
+                    })
                 }
             });
         $(document).ready(function () {
-                $('.tablesorter').tablesorter();
+            $('.tablesorter').tablesorter();
+
+            if ($('table').hasClass('limit5') || $('table').hasClass('limit10') || $('table').hasClass('limit20')) {
+                var classes = $('table').attr('class');
+                var regex = /limit(\d+)/g;
+                var m;
+                var limit = 0;
+
+                while ((m = regex.exec(classes)) !== null) {
+                    // This is necessary to avoid infinite loops with zero-width matches
+                    if (m.index === regex.lastIndex) {
+                        regex.lastIndex++;
+                    }
+
+                    limit = m[1];
+                }
+
+                if (limit > 0) {
+                    if (limit < $('table tr').length - 1) {
+                        var paging = '<div class="paging">';
+                        paging += '<button><</button>';
+                        for (var i = 0; i < (($('table tr').length - 1) / limit); i++) {
+                            paging += '<button>' + (i + 1) + '</button>';
+                        }
+                        paging += '<button>></button>';
+                        paging += '</div>';
+                        $('table').after(paging);
+                    }
+                }
             }
-        );
+        });
     </script>
     <style>
         .autocomplete-suggestions {
@@ -305,15 +368,23 @@ $current_item = $matches[0][1];
             cursor: pointer;
         }
 
-        table.limit5 tr:nth-child(n+5) {
+        table.limit5 tr:nth-of-type(n+6) {
             display: none;
         }
 
-        table.limit10 tr:nth-child(n+10) {
+        table.limit10 tr:nth-of-type(n+11) {
             display: none;
         }
 
-        table.limit20 tr:nth-child(n+20) {
+        table.limit20 tr:nth-of-type(n+21) {
+            display: none;
+        }
+
+        table.limit50 tr:nth-of-type(n+51) {
+            display: none;
+        }
+
+        table.limit100 tr:nth-of-type(n+101) {
             display: none;
         }
     </style>
