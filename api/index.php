@@ -69,11 +69,11 @@ switch ($_GET['type']) {
     case 'add':
         switch ($_GET['table']) {
             case 'editions':
-                if (!empty($_POST['name'])) {
+                if (!empty($_POST['edition_name'])) {
                     pg_query($db, "
                         INSERT INTO {$_GET['table']} 
                         VALUES (
-                            '{$_POST['name']}'
+                            '{$_POST['edition_name']}'
                         )"
                     );
                 }
@@ -581,10 +581,10 @@ INSERT INTO {$_GET['table']} VALUES (
         if (array_key_exists('id', $_GET) && intval($_GET['id']) > 0) {
             switch ($_GET['table']) {
                 case 'editions':
-                    if (array_key_exists('name', $_POST) && !empty($_POST['name'])) {
+                    if (array_key_exists('edition_name', $_POST) && !empty($_POST['edition_name'])) {
                         pg_query($db, "
                         UPDATE {$_GET['table']} 
-                        SET name='{$_POST['name']}'
+                        SET edition_name='{$_POST['edition_name']}'
                         WHERE id = {$_GET['id']}
                         ");
                     }

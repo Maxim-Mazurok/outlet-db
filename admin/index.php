@@ -376,23 +376,16 @@ $current_item = $matches[0][1];
             $suggestions = [];
 
             foreach ($columns as $column) {
-                if ($current_item === 'editions') {
-                    $suggestions['edition_name']['lookup'] = [];
-                    foreach ($data as $datum) {
-                        array_push($suggestions['edition_name']['lookup'], ['value' => $datum->name]);
-                    }
-                } else {
-                    $suggestions[$column]['lookup'] = [];
-                    foreach ($data as $datum) {
-                        if (in_array(['value' => $datum->$column], $suggestions[$column]['lookup']) === false) {
-                            array_push($suggestions[$column]['lookup'], ['value' => $datum->$column]);
-                        }
+                $suggestions[$column]['lookup'] = [];
+                foreach ($data as $datum) {
+                    if (in_array(['value' => $datum->$column], $suggestions[$column]['lookup']) === false) {
+                        array_push($suggestions[$column]['lookup'], ['value' => $datum->$column]);
                     }
                 }
             }
 
             foreach ($suggestions as $suggestion_name => $values) {
-                if ($current_item === 'editions' && ($suggestion_name === 'name' || $suggestion_name === 'edition_name')) {
+                if ($suggestion_name === 'edition_name') {
                     echo "<script>
                     $(document).ready(function () {
                         if ($('input[name=edition_name]').length > 0 || $('input[type=text]').length === 1) {
