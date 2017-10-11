@@ -52,10 +52,10 @@ switch ($_GET['type']) {
     case 'get':
         $where = [];
         $where_sql = '';
-        if (!empty($_GET['edition_name'])) $where['edition_name'] = urldecode($_GET['edition_name']);
-        if (!empty($_GET['model_number'])) $where['model_number'] = urldecode($_GET['model_number']);
-        if (!empty($_GET['model_name'])) $where['model_name'] = urldecode($_GET['model_name']);
-        if (!empty($_GET['shoot_name'])) $where['shoot_name'] = urldecode($_GET['shoot_name']);
+        if (!empty($_GET['edition_name'])) $where['edition_name'] = $_GET['edition_name'];
+        if (!empty($_GET['model_number'])) $where['model_number'] = $_GET['model_number'];
+        if (!empty($_GET['model_name'])) $where['model_name'] = $_GET['model_name'];
+        if (!empty($_GET['shoot_name'])) $where['shoot_name'] = $_GET['shoot_name'];
         if (!empty($where)) {
             $where_sql = ' WHERE ';
             $i = 0;
@@ -84,11 +84,11 @@ switch ($_GET['type']) {
     case 'add':
         switch ($_GET['table']) {
             case 'editions':
-                if (!empty($_POST['edition_name'])) {
+                if (!empty($_POST['edition_name']) && !empty($_POST['prefix'])) {
                     pg_query($db, "
                         INSERT INTO {$_GET['table']} 
                         VALUES (
-                            '{$_POST['edition_name']}'
+                            '{$_POST['edition_name']}', DEFAULT, '{$_POST['prefix']}'
                         )"
                     );
                 }
@@ -596,14 +596,25 @@ INSERT INTO {$_GET['table']} VALUES (
         if (array_key_exists('id', $_GET) && intval($_GET['id']) > 0) {
             switch ($_GET['table']) {
                 case 'editions':
-                    if (array_key_exists('edition_name', $_POST) && !empty($_POST['edition_name'])) {
-                        pg_query($db, "
-                        UPDATE {$_GET['table']} 
-                        SET edition_name='{$_POST['edition_name']}'
-                        WHERE id = {$_GET['id']}
-                        ");
+                    $post_fields = array(
+                        'edition_name',
+                        'prefix',
+                    );
+
+                    $sql_fields = array();
+
+                    foreach ($post_fields as $field) {
+                        if (array_key_exists($field, $_POST)) {
+                            array_push($sql_fields, "{$field}='{$_POST[$field]}'");
+                        }
+                    }
+
+                    if (count($sql_fields) > 0) {
+                        $query = "UPDATE {$_GET['table']} SET " . join(", ", $sql_fields) . " WHERE id = {$_GET['id']}";
+                        pg_query($db, $query);
                     }
                     break;
+
                 case 'edition_menu':
                     $post_fields = array(
                         'edition_name',
