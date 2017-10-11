@@ -50,6 +50,21 @@ require_once('../include/db.php');
 
 switch ($_GET['type']) {
     case 'get':
+        $where = [];
+        $where_sql = '';
+        if (!empty($_GET['edition_name'])) $where['edition_name'] = urldecode($_GET['edition_name']);
+        if (!empty($_GET['model_number'])) $where['model_number'] = urldecode($_GET['model_number']);
+        if (!empty($_GET['model_name'])) $where['model_name'] = urldecode($_GET['model_name']);
+        if (!empty($_GET['shoot_name'])) $where['shoot_name'] = urldecode($_GET['shoot_name']);
+        if (!empty($where)) {
+            $where_sql = ' WHERE ';
+            $i = 0;
+            foreach ($where as $key => $value) {
+                $i++;
+                $where_sql .= " $key = '" . pg_escape_string($value) . "' ";
+                if ($i < count($where)) $where_sql .= ' AND ';
+            }
+        }
         switch ($_GET['table']) {
             case 'editions':
             case 'edition_menu':
@@ -57,7 +72,7 @@ switch ($_GET['type']) {
             case 'social_networks':
             case 'subscriptions_menu':
             case 'videos_menu':
-                $r = pg_query($db, "SELECT * FROM {$_GET['table']} ORDER BY id ASC");
+                $r = pg_query($db, "SELECT * FROM {$_GET['table']} $where_sql ORDER BY id ASC");
                 echo json_encode(pg_num_rows($r) > 0 ? pg_fetch_all($r) : []);
                 break;
             default:
