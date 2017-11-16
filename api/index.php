@@ -113,7 +113,7 @@ switch ($_GET['type']) {
                         if (empty($_FILES[$field])) {
                             $fields_not_empty = false;
                         }
-                        $upload = $s3->upload($bucket, $_FILES[$field]['name'], fopen($_FILES[$field]['tmp_name'], 'rb'), 'public-read');
+                        $upload = $s3->upload($bucket, (is_array($_FILES[$field]['name']) ? $_FILES[$field]['name'][0] : $_FILES[$field]['name']), fopen((is_array($_FILES[$field]['tmp_name']) ? $_FILES[$field]['tmp_name'][0] : $_FILES[$field]['tmp_name']), 'rb'), 'public-read');
                         array_push($sql_fields, $upload->get('ObjectURL'));
                     } else {
                         if (empty($_POST[$field])) {
@@ -174,7 +174,7 @@ switch ($_GET['type']) {
                                     array_push($sql_fields['upload'], $upload->get('ObjectURL'));
                                 }
                             } else {
-                                $upload = $s3->upload($bucket, $_FILES[$field]['name'], fopen($_FILES[$field]['tmp_name'], 'rb'), 'public-read');
+                                $upload = $s3->upload($bucket, (is_array($_FILES[$field]['name']) ? $_FILES[$field]['name'][0] : $_FILES[$field]['name']), fopen((is_array($_FILES[$field]['tmp_name']) ? $_FILES[$field]['tmp_name'][0] : $_FILES[$field]['tmp_name']), 'rb'), 'public-read');
                                 array_push($sql_fields, $upload->get('ObjectURL'));
                             }
                         }
@@ -254,7 +254,7 @@ switch ($_GET['type']) {
                         if (empty($_FILES[$field])) {
                             $fields_not_empty = false;
                         }
-                        $upload = $s3->upload($bucket, $_FILES[$field]['name'], fopen($_FILES[$field]['tmp_name'], 'rb'), 'public-read');
+                        $upload = $s3->upload($bucket, (is_array($_FILES[$field]['name']) ? $_FILES[$field]['name'][0] : $_FILES[$field]['name']), fopen((is_array($_FILES[$field]['tmp_name']) ? $_FILES[$field]['tmp_name'][0] : $_FILES[$field]['tmp_name']), 'rb'), 'public-read');
                         array_push($sql_fields, $upload->get('ObjectURL'));
                     } else {
                         if (empty($_POST[$field])) {
@@ -309,7 +309,7 @@ switch ($_GET['type']) {
                                     array_push($sql_fields['upload'], $upload->get('ObjectURL'));
                                 }
                             } else {
-                                $upload = $s3->upload($bucket, $_FILES[$field]['name'], fopen($_FILES[$field]['tmp_name'], 'rb'), 'public-read');
+                                $upload = $s3->upload($bucket, (is_array($_FILES[$field]['name']) ? $_FILES[$field]['name'][0] : $_FILES[$field]['name']), fopen((is_array($_FILES[$field]['tmp_name']) ? $_FILES[$field]['tmp_name'][0] : $_FILES[$field]['tmp_name']), 'rb'), 'public-read');
                                 array_push($sql_fields, $upload->get('ObjectURL'));
                             }
                         }
@@ -473,7 +473,7 @@ INSERT INTO {$_GET['table']} VALUES (
                                     array_push($sql_fields["upload_$field"], $upload->get('ObjectURL'));
                                 }
                             } else {
-                                $upload = $s3->upload($bucket, $_FILES[$field]['name'], fopen($_FILES[$field]['tmp_name'], 'rb'), 'public-read');
+                                $upload = $s3->upload($bucket, (is_array($_FILES[$field]['name']) ? $_FILES[$field]['name'][0] : $_FILES[$field]['name']), fopen((is_array($_FILES[$field]['tmp_name']) ? $_FILES[$field]['tmp_name'][0] : $_FILES[$field]['tmp_name']), 'rb'), 'public-read');
                                 array_push($sql_fields, $upload->get('ObjectURL'));
                             }
                         }
@@ -633,7 +633,7 @@ INSERT INTO {$_GET['table']} VALUES (
                         if (substr($field, 0, strlen('(upl)')) === '(upl)') {
                             $field = substr($field, strlen('(upl)'));
                             if (!empty($_FILES[$field])) {
-                                $upload = $s3->upload($bucket, $_FILES[$field]['name'], fopen($_FILES[$field]['tmp_name'], 'rb'), 'public-read');
+                                $upload = $s3->upload($bucket, (is_array($_FILES[$field]['name']) ? $_FILES[$field]['name'][0] : $_FILES[$field]['name']), fopen((is_array($_FILES[$field]['tmp_name']) ? $_FILES[$field]['tmp_name'][0] : $_FILES[$field]['tmp_name']), 'rb'), 'public-read');
                                 array_push($sql_fields, "{$field}='{$upload->get('ObjectURL')}'");
                                 array_push($images, array($field, $upload->get('ObjectURL')));
                             }
@@ -674,7 +674,7 @@ INSERT INTO {$_GET['table']} VALUES (
                             if (empty($_FILES[$field])) {
                                 $fields_not_empty = false;
                             } else {
-                                $upload = $s3->upload($bucket, $_FILES[$field]['name'], fopen($_FILES[$field]['tmp_name'], 'rb'), 'public-read');
+                                $upload = $s3->upload($bucket, (is_array($_FILES[$field]['name']) ? $_FILES[$field]['name'][0] : $_FILES[$field]['name']), fopen((is_array($_FILES[$field]['tmp_name']) ? $_FILES[$field]['tmp_name'][0] : $_FILES[$field]['tmp_name']), 'rb'), 'public-read');
                                 array_push($sql_fields, "{$field}='{$upload->get('ObjectURL')}'");
                                 array_push($images, array($field, $upload->get('ObjectURL')));
                             }
@@ -718,7 +718,7 @@ INSERT INTO {$_GET['table']} VALUES (
                         if (substr($field, 0, strlen('(upl)')) === '(upl)') {
                             $field = substr($field, strlen('(upl)'));
                             if (!empty($_FILES[$field])) {
-                                $upload = $s3->upload($bucket, $_FILES[$field]['name'], fopen($_FILES[$field]['tmp_name'], 'rb'), 'public-read');
+                                $upload = $s3->upload($bucket, (is_array($_FILES[$field]['name']) ? $_FILES[$field]['name'][0] : $_FILES[$field]['name']), fopen((is_array($_FILES[$field]['tmp_name']) ? $_FILES[$field]['tmp_name'][0] : $_FILES[$field]['tmp_name']), 'rb'), 'public-read');
                                 array_push($sql_fields, "{$field}='{$upload->get('ObjectURL')}'");
                                 array_push($images, array($field, $upload->get('ObjectURL')));
                             }
@@ -756,7 +756,7 @@ INSERT INTO {$_GET['table']} VALUES (
                             if (empty($_FILES[$field])) {
                                 $fields_not_empty = false;
                             } else {
-                                $upload = $s3->upload($bucket, $_FILES[$field]['name'], fopen($_FILES[$field]['tmp_name'], 'rb'), 'public-read');
+                                $upload = $s3->upload($bucket, (is_array($_FILES[$field]['name']) ? $_FILES[$field]['name'][0] : $_FILES[$field]['name']), fopen((is_array($_FILES[$field]['tmp_name']) ? $_FILES[$field]['tmp_name'][0] : $_FILES[$field]['tmp_name']), 'rb'), 'public-read');
                                 array_push($sql_fields, "{$field}='{$upload->get('ObjectURL')}'");
                             }
                         } elseif (substr($field, 0, strlen('(gen)')) === '(gen)') {
@@ -809,7 +809,7 @@ INSERT INTO {$_GET['table']} VALUES (
                                 if (empty($_FILES[$field])) {
                                     $fields_not_empty = false;
                                 }
-                                $upload = $s3->upload($bucket, $_FILES[$field]['name'], fopen($_FILES[$field]['tmp_name'], 'rb'), 'public-read');
+                                $upload = $s3->upload($bucket, (is_array($_FILES[$field]['name']) ? $_FILES[$field]['name'][0] : $_FILES[$field]['name']), fopen((is_array($_FILES[$field]['tmp_name']) ? $_FILES[$field]['tmp_name'][0] : $_FILES[$field]['tmp_name']), 'rb'), 'public-read');
                                 array_push($sql_fields, "{$field}='{$upload->get('ObjectURL')}'");
                             }
                         } elseif (substr($field, 0, strlen('(len)')) === '(len)') {
