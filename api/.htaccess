@@ -9,10 +9,10 @@ AuthName "Outlet DB API authentication"
 AuthUserFile /app/api/.htpasswd
 Require valid-user
 
-Header set Access-Control-Allow-Origin "*"
-Header set Access-Control-Allow-Methods "POST, GET, OPTIONS, DELETE, PUT"
-Header set Access-Control-Max-Age "1000"
-Header set Access-Control-Allow-Headers "x-requested-with, Content-Type, origin, authorization, accept, client-security-token"
+Header always set Access-Control-Allow-Origin "*"
+Header always set Access-Control-Allow-Methods "POST, GET, OPTIONS, DELETE, PUT"
+Header always set Access-Control-Max-Age "1000"
+Header always set Access-Control-Allow-Headers "x-requested-with, Content-Type, origin, authorization, accept, client-security-token"
 
 RewriteEngine On
 RewriteCond %{REQUEST_METHOD} OPTIONS
