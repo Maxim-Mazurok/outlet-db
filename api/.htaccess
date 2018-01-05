@@ -10,6 +10,7 @@ AuthUserFile /app/api/.htpasswd
 Require valid-user
 
 RewriteEngine on
+RewriteBase /
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ /api/index.php?path=$1 [NC,L,QSA]
