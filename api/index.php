@@ -75,6 +75,18 @@ switch ($_GET['type']) {
                 $r = pg_query($db, "SELECT * FROM {$_GET['table']} $where_sql ORDER BY id ASC");
                 echo json_encode(pg_num_rows($r) > 0 ? pg_fetch_all($r) : []);
                 break;
+            case 'rules':
+                $r = pg_query($db, "SELECT * FROM {$_GET['table']} $where_sql ORDER BY id ASC");
+                echo '<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+             <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+                         <meta http-equiv="X-UA-Compatible" content="ie=edge">
+             <title>Terms Of Service</title>
+</head>
+<body>' . pg_fetch_all($r)[0]['text'] . '</body></html>';
+                break;
             default:
                 die(404);
                 break;

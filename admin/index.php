@@ -261,8 +261,8 @@ $current_item = $matches[0][1];
             box-sizing: border-box;
             display: inline-block;
             list-style: none;
-            width: calc(100% / 6);
-            padding: 0 calc(10% / 6);
+            width: calc(100% / 7);
+            padding: 0 calc(10% / 7);
             text-align: center;
         }
 
@@ -419,6 +419,10 @@ $current_item = $matches[0][1];
         <?= ($current_item === 'videos_menu' ? 'class="selected"' : '') ?>>
         <a href="/admin/videos_menu">
             Videos Menu
+        </a>
+        </li><!----><li>
+        <a href="/admin/rules.php">
+            TOS
         </a>
     </li>
 </ul>
